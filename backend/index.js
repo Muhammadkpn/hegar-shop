@@ -24,15 +24,17 @@ app.get('/', (req, res) => {
     res.status(200).send('API Wisela Web App');
 });
 
-// create alert for database connection
+// Test database connection pool
 const database = require('./database');
 
-database.connect((err) => {
+database.getConnection((err, connection) => {
     if (err) {
-        console.error(`error connecting : ${err.stack}`);
+        console.error(`Error connecting to database: ${err.stack}`);
         return;
     }
-    console.log('Connected as id : ', database.threadId);
+    console.log('Database connection pool established successfully');
+    console.log('Connection ID:', connection.threadId);
+    connection.release(); // Release connection back to pool
 });
 
 // import router
