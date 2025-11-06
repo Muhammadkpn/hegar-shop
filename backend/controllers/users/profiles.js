@@ -1,27 +1,46 @@
 const CryptoJS = require('crypto-js');
 const { validationResult } = require('express-validator');
-const database = require('../../database');
-const { asyncQuery, generateQuery, today } = require('../../helpers');
+const {
+    asyncQuery,
+    generateUpdateQuery,
+    paginatedQuery,
+    today,
+} = require('../../helpers/queryHelper');
+const { getPaginationParams, createPaginatedResponse } = require('../../helpers/pagination');
 
 const { SECRET_KEY } = process.env;
+
+/**
+ * User Profiles Controller - Optimized
+ * Phase 1: Fixed SQL injection vulnerabilities
+ */
 
 module.exports = {
     getStore: async (req, res) => {
         const { id } = req.params;
         try {
-            // get profile data
-            const getStore = `SELECT s.user_id, s.store_name, s.main_address_id, u.main_bank_id, s.status FROM stores s
-            JOIN users u ON s.user_id = u.id
-            WHERE user_id = ${database.escape(id)};`;
-            const result = await asyncQuery(getStore);
+            const query = `
+                SELECT s.user_id, s.store_name, s.main_address_id, u.main_bank_id, s.status
+                FROM stores s
+                JOIN users u ON s.user_id = u.id
+                WHERE user_id = ?
+            `;
+            const result = await asyncQuery(query, [id]);
 
-            // send response
+            if (result.length === 0) {
+                return res.status(404).send({
+                    status: 'fail',
+                    code: 404,
+                    message: 'Store not found',
+                });
+            }
+
             res.status(200).send({
                 status: 'success',
                 data: result[0],
             });
         } catch (error) {
-            console.log(error);
+            console.error('getStore error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,

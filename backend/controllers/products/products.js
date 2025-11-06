@@ -1,79 +1,145 @@
 const database = require('../../database');
-const { asyncQuery, generateQuery, today } = require('../../helpers/queryHelper');
+const {
+    asyncQuery,
+    generateUpdateQuery,
+    buildLikeCondition,
+    paginatedQuery,
+    today,
+    escape,
+} = require('../../helpers/queryHelper');
+const { getPaginationParams, createPaginatedResponse } = require('../../helpers/pagination');
+
+/**
+ * Products Controller - Optimized Version
+ * Phase 1: Database Optimization
+ * - Fixed SQL injection vulnerabilities
+ * - Added pagination
+ * - Improved query performance
+ * - Added parameterized queries
+ */
 
 module.exports = {
+    /**
+     * Get products with pagination and filtering
+     * FIXED: SQL injection, Added: Pagination
+     */
     getProduct: async (req, res) => {
-        const {
-            _sort, _order, search, category,
-        } = req.query;
+        const { _sort, _order, search, category } = req.query;
+        const { page, limit, offset } = getPaginationParams(req);
 
         try {
-            // check sort query
-            let sort = '';
-            if (_sort) {
-                sort += ` ORDER BY ${_sort} ${_order ? _order.toUpperCase() : 'ASC'}`;
+            // Build sort clause safely
+            const allowedSortFields = ['name', 'regular_price', 'sale_price', 'released_date', 'rating'];
+            let sortField = allowedSortFields.includes(_sort) ? _sort : 'released_date';
+            let sortOrder = _order && _order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+            // Base query with joins
+            let baseQuery = `
+                SELECT
+                    p.status_id, p.store_id, s.store_name, p.id, p.name, p.description,
+                    p.regular_price,
+                    (p.regular_price - p.sale_price)/p.regular_price AS discount,
+                    p.sale_price, p.stock, p.weight, p.released_date, p.updated_date,
+                    tb1.image, tb2.total_review, tb2.rating, tb3.category, tb4.tags,
+                    tb5.total_sales_qty
+                FROM products p
+                JOIN stores s ON p.store_id = s.user_id
+                JOIN (
+                    SELECT product_id, GROUP_CONCAT(image) AS image
+                    FROM product_image
+                    GROUP BY product_id
+                ) AS tb1 ON p.id = tb1.product_id
+                LEFT JOIN (
+                    SELECT od.product_id, COUNT(rating) AS total_review, AVG(rating) AS rating
+                    FROM product_review pr
+                    JOIN order_details od ON pr.review_id = od.review_id
+                    GROUP BY product_id
+                ) AS tb2 ON p.id = tb2.product_id
+                JOIN (
+                    SELECT pc.product_id, GROUP_CONCAT(c.name) AS category
+                    FROM product_category pc
+                    JOIN category_product c ON pc.category_id = c.id
+                    GROUP BY pc.product_id
+                ) AS tb3 ON p.id = tb3.product_id
+                JOIN (
+                    SELECT pt.product_id, GROUP_CONCAT(tp.name) AS tags
+                    FROM product_tag pt
+                    JOIN tag_product tp ON pt.tag_id = tp.id
+                    GROUP BY pt.product_id
+                ) AS tb4 ON p.id = tb4.product_id
+                LEFT JOIN (
+                    SELECT product_id, SUM(qty) AS total_sales_qty
+                    FROM order_details
+                    GROUP BY product_id
+                ) tb5 ON p.id = tb5.product_id
+                WHERE p.status_id = 1
+            `;
+
+            // Build parameters array
+            const params = [];
+
+            // Add filters
+            if (category && search) {
+                baseQuery += ` AND tb3.category LIKE ? AND p.name LIKE ?`;
+                params.push(`%${category}%`, `%${search}%`);
+            } else if (search) {
+                baseQuery += ` AND p.name LIKE ?`;
+                params.push(`%${search}%`);
+            } else if (category) {
+                baseQuery += ` AND tb3.category LIKE ?`;
+                params.push(`%${category}%`);
             }
 
-            // get all data product (product, image, review, category, and store)
-            let getProduct = `SELECT p.status_id, p.store_id, s.store_name, p.id, p.name, p.description, p.regular_price, (p.regular_price - p.sale_price)/regular_price AS discount,
-                          p.sale_price, p.stock, p.weight, p.released_date, p.updated_date, tb1.image, tb2.total_review, tb2.rating, tb3.category, tb4.tags, tb5.total_sales_qty FROM products p
-                          JOIN stores s ON p.store_id = s.user_id
-                          JOIN ( SELECT product_id, GROUP_CONCAT(image) AS image FROM product_image
-                            GROUP BY product_id ) AS tb1 ON p.id = tb1.product_id
-                          LEFT JOIN ( SELECT od.product_id, COUNT(rating) AS total_review,  AVG(rating) AS rating FROM product_review pr
-                            JOIN order_details od ON  pr.review_id = od.review_id
-                            GROUP BY product_id ) AS tb2 ON p.id = tb2.product_id
-                          JOIN ( SELECT pc.product_id, GROUP_CONCAT(c.name) AS category FROM product_category pc
-                            JOIN category_product c ON pc.category_id = c.id
-                            GROUP BY pc.product_id ) AS tb3 ON p.id = tb3.product_id
-                          JOIN ( SELECT pt.product_id, GROUP_CONCAT(tp.name) AS tags FROM product_tag pt
-                            JOIN tag_product tp ON pt.tag_id= tp.id
-                            GROUP BY pt.product_id) AS tb4 ON p.id = tb4.product_id
-                          LEFT JOIN (SELECT product_id, SUM(qty) AS total_sales_qty FROM order_details od
-                            GROUP BY product_id) tb5 ON p.id = tb5.product_id
-                          WHERE p.status_id = 1`;
+            // Add sorting
+            baseQuery += ` ORDER BY ${sortField} ${sortOrder}`;
 
-            // type of query
-            const checkCategory = Object.prototype.hasOwnProperty.call(req.query, 'category');
-            const checkSearch = Object.prototype.hasOwnProperty.call(req.query, 'search');
-            if (checkCategory && checkSearch) {
-                getProduct += ` AND category LIKE '%${category}%' AND name LIKE'%${search}%'`;
-            } else if (checkSearch) { // Products in specific category
-                getProduct += ` AND name LIKE '%${search}%'`;
-            } else if (checkCategory) {
-                getProduct += ` AND category LIKE '%${category}%'`;
-            }
+            // Count query
+            const countQuery = `
+                SELECT COUNT(DISTINCT p.id) as total
+                FROM products p
+                JOIN product_category pc ON p.id = pc.product_id
+                JOIN category_product c ON pc.category_id = c.id
+                WHERE p.status_id = 1
+                ${category ? 'AND c.name LIKE ?' : ''}
+                ${search ? 'AND p.name LIKE ?' : ''}
+            `;
 
-            getProduct += ` ${sort}`;
-            const result = await asyncQuery(getProduct);
+            const countParams = [];
+            if (category) countParams.push(`%${category}%`);
+            if (search) countParams.push(`%${search}%`);
 
-            // convert data to array
-            let image = '';
-            let tempCategory = '';
-            let tempTags = '';
-            result.forEach((item, index) => {
+            // Execute paginated query
+            const result = await paginatedQuery(
+                baseQuery,
+                countQuery,
+                params,
+                page,
+                limit
+            );
+
+            // Process results - convert comma-separated strings to arrays
+            result.data.forEach((item, index) => {
                 if (item.category) {
-                    tempCategory = item.category.split(',');
-                    result[index].category = tempCategory;
+                    result.data[index].category = item.category.split(',');
                 }
                 if (item.tags) {
-                    tempTags = item.tags.split(',');
-                    result[index].tags = tempTags;
+                    result.data[index].tags = item.tags.split(',');
                 }
                 if (item.image) {
-                    image = item.image.split(',');
-                    result[index].image = image;
+                    result.data[index].image = item.image.split(',');
                 }
             });
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully!',
-                data: result,
-            });
+            // Send paginated response
+            res.status(200).send(createPaginatedResponse(
+                result.data,
+                result.total,
+                page,
+                limit,
+                'Products retrieved successfully'
+            ));
         } catch (error) {
-            console.log(error);
+            console.error('getProduct error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
@@ -81,55 +147,81 @@ module.exports = {
             });
         }
     },
+
+    /**
+     * Get product details by ID
+     * FIXED: SQL injection vulnerability
+     */
     getProductDetails: async (req, res) => {
         const { id } = req.params;
 
         try {
-            // get all data product (product, image, review, category, and store)
-            const getProductDetails = `SELECT p.status_id, p.store_id, s.store_name, p.id, p.name, p.description, p.regular_price, 
-                          p.sale_price, p.stock, p.weight, p.released_date, p.updated_date, tb1.image, tb2.total_review, tb2.rating, tb3.category, tb4.tags, tb5.total_sales_qty FROM products p
-                          JOIN stores s ON p.store_id = s.user_id
-                          JOIN ( SELECT product_id, GROUP_CONCAT(image) AS image FROM product_image
-                            GROUP BY product_id ) AS tb1 ON p.id = tb1.product_id
-                          LEFT JOIN ( SELECT od.product_id, COUNT(rating) AS total_review, AVG(rating) AS rating FROM product_review pr
-                            JOIN order_details od ON  pr.review_id = od.review_id
-                            GROUP BY product_id ) AS tb2 ON p.id = tb2.product_id
-                          JOIN ( SELECT pc.product_id, GROUP_CONCAT(c.name) AS category FROM product_category pc
-                            JOIN category_product c ON pc.category_id = c.id
-                            GROUP BY pc.product_id ) AS tb3 ON p.id = tb3.product_id
-                          JOIN ( SELECT pt.product_id, GROUP_CONCAT(tp.name) AS tags FROM product_tag pt
-                            JOIN tag_product tp ON pt.tag_id= tp.id
-                            GROUP BY pt.product_id) AS tb4 ON p.id = tb4.product_id
-                          LEFT JOIN (SELECT product_id, SUM(qty) AS total_sales_qty FROM order_details od
-                            GROUP BY product_id) tb5 ON p.id = tb5.product_id
-                          WHERE p.id = ${database.escape(id)}`;
-            const result = await asyncQuery(getProductDetails);
+            const query = `
+                SELECT
+                    p.status_id, p.store_id, s.store_name, p.id, p.name, p.description,
+                    p.regular_price, p.sale_price, p.stock, p.weight, p.released_date,
+                    p.updated_date, tb1.image, tb2.total_review, tb2.rating, tb3.category,
+                    tb4.tags, tb5.total_sales_qty
+                FROM products p
+                JOIN stores s ON p.store_id = s.user_id
+                JOIN (
+                    SELECT product_id, GROUP_CONCAT(image) AS image
+                    FROM product_image
+                    GROUP BY product_id
+                ) AS tb1 ON p.id = tb1.product_id
+                LEFT JOIN (
+                    SELECT od.product_id, COUNT(rating) AS total_review, AVG(rating) AS rating
+                    FROM product_review pr
+                    JOIN order_details od ON pr.review_id = od.review_id
+                    GROUP BY product_id
+                ) AS tb2 ON p.id = tb2.product_id
+                JOIN (
+                    SELECT pc.product_id, GROUP_CONCAT(c.name) AS category
+                    FROM product_category pc
+                    JOIN category_product c ON pc.category_id = c.id
+                    GROUP BY pc.product_id
+                ) AS tb3 ON p.id = tb3.product_id
+                JOIN (
+                    SELECT pt.product_id, GROUP_CONCAT(tp.name) AS tags
+                    FROM product_tag pt
+                    JOIN tag_product tp ON pt.tag_id = tp.id
+                    GROUP BY pt.product_id
+                ) AS tb4 ON p.id = tb4.product_id
+                LEFT JOIN (
+                    SELECT product_id, SUM(qty) AS total_sales_qty
+                    FROM order_details
+                    GROUP BY product_id
+                ) tb5 ON p.id = tb5.product_id
+                WHERE p.id = ?
+            `;
 
-            // convert data to array
-            let image = '';
-            let category = '';
-            let tags = '';
-            result.forEach((item, index) => {
-                if (!item.rating) {
-                    result[index].rating = 0;
-                }
+            const result = await asyncQuery(query, [id]);
 
-                image = item.image.split(',');
-                category = item.category.split(',');
-                tags = item.tags.split(',');
-                result[index].image = image;
-                result[index].category = category;
-                result[index].tags = tags;
-            });
+            if (result.length === 0) {
+                return res.status(404).send({
+                    status: 'fail',
+                    code: 404,
+                    message: 'Product not found',
+                });
+            }
 
-            // send response
+            // Process result
+            const product = result[0];
+            if (!product.rating) {
+                product.rating = 0;
+            }
+
+            product.image = product.image ? product.image.split(',') : [];
+            product.category = product.category ? product.category.split(',') : [];
+            product.tags = product.tags ? product.tags.split(',') : [];
+
             res.status(200).send({
                 status: 'success',
-                message: 'Your request has been successfully!',
-                data: result[0],
+                message: 'Product details retrieved successfully',
+                data: product,
             });
         } catch (error) {
-            console.log(error);
+            console.error('getProductDetails error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
@@ -137,71 +229,77 @@ module.exports = {
             });
         }
     },
+
+    /**
+     * Get products by store
+     * FIXED: SQL injection vulnerability
+     */
     getProductStore: async (req, res) => {
         const { id } = req.params;
         const { categories, tags, name } = req.query;
 
         try {
-            // get all data product (product, image, review, category, and store)
-            let getProductStore = `SELECT p.status_id, p.store_id, s.store_name, p.id, p.name, p.description, p.regular_price, 
-                          p.sale_price, p.stock, p.weight, p.released_date, p.updated_date, tb1.image, tb3.category, tb4.tags FROM products p
-                          JOIN stores s ON p.store_id = s.user_id
-                          JOIN ( SELECT product_id, GROUP_CONCAT(image) AS image FROM product_image
-                            GROUP BY product_id ) AS tb1 ON p.id = tb1.product_id
-                          JOIN ( SELECT pc.product_id, GROUP_CONCAT(c.name) AS category FROM product_category pc
-                            JOIN category_product c ON pc.category_id = c.id
-                            GROUP BY pc.product_id ) AS tb3 ON p.id = tb3.product_id
-                          JOIN ( SELECT pt.product_id, GROUP_CONCAT(tp.name) AS tags FROM product_tag pt
-                            JOIN tag_product tp ON pt.tag_id= tp.id
-                            GROUP BY pt.product_id) AS tb4 ON p.id = tb4.product_id
-                          WHERE p.store_id = ${database.escape(id)}`;
+            let query = `
+                SELECT
+                    p.status_id, p.store_id, s.store_name, p.id, p.name, p.description,
+                    p.regular_price, p.sale_price, p.stock, p.weight, p.released_date,
+                    p.updated_date, tb1.image, tb3.category, tb4.tags
+                FROM products p
+                JOIN stores s ON p.store_id = s.user_id
+                JOIN (
+                    SELECT product_id, GROUP_CONCAT(image) AS image
+                    FROM product_image
+                    GROUP BY product_id
+                ) AS tb1 ON p.id = tb1.product_id
+                JOIN (
+                    SELECT pc.product_id, GROUP_CONCAT(c.name) AS category
+                    FROM product_category pc
+                    JOIN category_product c ON pc.category_id = c.id
+                    GROUP BY pc.product_id
+                ) AS tb3 ON p.id = tb3.product_id
+                JOIN (
+                    SELECT pt.product_id, GROUP_CONCAT(tp.name) AS tags
+                    FROM product_tag pt
+                    JOIN tag_product tp ON pt.tag_id = tp.id
+                    GROUP BY pt.product_id
+                ) AS tb4 ON p.id = tb4.product_id
+                WHERE p.store_id = ?
+            `;
 
-            // type of query
-            const checkCategory = Object.prototype.hasOwnProperty.call(req.query, 'categories');
-            const checkTag = Object.prototype.hasOwnProperty.call(req.query, 'tags');
-            const checkName = Object.prototype.hasOwnProperty.call(req.query, 'name');
+            const params = [id];
 
-            if (checkCategory && checkTag && checkName) {
-                getProductStore += ` AND tb3.category LIKE '%${categories}%' AND tb4.tags LIKE '%${tags}%' AND p.name LIKE '%${name}%'`;
-            } else if (checkCategory && checkTag) {
-                getProductStore += ` AND tb3.category LIKE '%${categories}%' AND tb4.tags LIKE '%${tags}%'`;
-            } else if (checkCategory && checkName) {
-                getProductStore += ` AND tb3.category LIKE '%${categories}%'AND p.name LIKE '%${name}%'`;
-            } else if (checkTag && checkName) {
-                getProductStore += ` AND tb4.tags LIKE '%${tags}%' AND p.name LIKE '%${name}%'`;
-            } else if (checkCategory) {
-                getProductStore += ` AND tb3.category LIKE '%${categories}%'`;
-            } else if (checkTag) {
-                getProductStore += ` AND tb4.tags LIKE '%${tags}%'`;
-            } else if (checkName) {
-                getProductStore += ` AND p.name LIKE '%${name}%'`;
+            // Add filters with parameterized queries
+            if (categories) {
+                query += ` AND tb3.category LIKE ?`;
+                params.push(`%${categories}%`);
+            }
+            if (tags) {
+                query += ` AND tb4.tags LIKE ?`;
+                params.push(`%${tags}%`);
+            }
+            if (name) {
+                query += ` AND p.name LIKE ?`;
+                params.push(`%${name}%`);
             }
 
-            getProductStore += ' ORDER BY released_date DESC';
-            const result = await asyncQuery(getProductStore);
+            query += ' ORDER BY released_date DESC';
 
-            // convert data to array
-            let image = '';
-            let category = '';
-            let tag = '';
+            const result = await asyncQuery(query, params);
+
+            // Process results
             result.forEach((item, index) => {
-                image = item.image.split(',');
-                category = item.category.split(',');
-                tag = item.tags.split(',');
-
-                result[index].image = image;
-                result[index].category = category;
-                result[index].tags = tag;
+                result[index].image = item.image ? item.image.split(',') : [];
+                result[index].category = item.category ? item.category.split(',') : [];
+                result[index].tags = item.tags ? item.tags.split(',') : [];
             });
 
-            // send response
             res.status(200).send({
                 status: 'success',
-                message: 'Your request has been successfully!',
+                message: 'Store products retrieved successfully',
                 data: result,
             });
         } catch (error) {
-            console.log(error);
+            console.error('getProductStore error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
@@ -209,56 +307,78 @@ module.exports = {
             });
         }
     },
+
+    /**
+     * Get products for admin with pagination
+     * FIXED: SQL injection, Added: Pagination
+     */
     getProductAdmin: async (req, res) => {
-        const {
-            _sort,
-            _order,
-            search,
-            status,
-        } = req.query;
+        const { _sort, _order, search, status } = req.query;
+        const { page, limit } = getPaginationParams(req);
 
         try {
-            // check sort query
-            let sort = '';
-            if (_sort && _order) {
-                sort += ` ORDER BY ${_sort} ${_order ? _order.toUpperCase() : 'ASC'}`;
+            // Build sort clause safely
+            const allowedSortFields = ['name', 'regular_price', 'released_date', 'updated_date'];
+            let sortField = allowedSortFields.includes(_sort) ? _sort : 'released_date';
+            let sortOrder = _order && _order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+            let baseQuery = `
+                SELECT
+                    p.status_id, p.store_id, u.username, p.id, p.name, p.description,
+                    p.regular_price, p.sale_price, p.stock, p.weight, p.released_date,
+                    p.updated_date, tb1.image
+                FROM products p
+                JOIN users u ON p.store_id = u.id
+                JOIN (
+                    SELECT product_id, GROUP_CONCAT(image) AS image
+                    FROM product_image
+                    GROUP BY product_id
+                ) AS tb1 ON p.id = tb1.product_id
+            `;
+
+            const params = [];
+            const whereClauses = [];
+
+            // Add filters
+            if (status) {
+                whereClauses.push('p.status_id = ?');
+                params.push(status);
             }
 
-            // get all data product (product, image, review, category, and store)
-            let getProductAdmin = `SELECT p.status_id, p.store_id, u.username, p.id, p.name, p.description, p.regular_price, 
-                        p.sale_price, p.stock, p.weight, p.released_date, p.updated_date, tb1.image FROM products p
-                        JOIN users u ON p.store_id = u.id
-                        JOIN ( SELECT product_id, GROUP_CONCAT(image) AS image FROM product_image
-                        GROUP BY product_id ) AS tb1 ON p.id = tb1.product_id`;
-
-            // filter product admin
-            const checkStatus = Object.prototype.hasOwnProperty.call(req.query, 'status');
-            const checkSearch = Object.prototype.hasOwnProperty.call(req.query, 'search');
-            if (checkStatus && checkSearch) {
-                getProductAdmin += ` WHERE p.status_id = ${status} AND p.name LIKE '%${search}%' OR u.username LIKE '%${search}%'`;
-            } else if (checkSearch) {
-                getProductAdmin += ` WHERE p.name LIKE '%${search}%' OR u.username LIKE '%${search}%'`;
-            } else if (checkStatus) {
-                getProductAdmin += ` WHERE p.status_id = ${status}`;
+            if (search) {
+                whereClauses.push('(p.name LIKE ? OR u.username LIKE ?)');
+                params.push(`%${search}%`, `%${search}%`);
             }
-            getProductAdmin += sort.length !== 0 ? sort : '';
-            const result = await asyncQuery(getProductAdmin);
 
-            // convert string to array
-            let image = [];
-            result.forEach((item, index) => {
-                image = item.image.split(',');
-                result[index].image = image;
+            if (whereClauses.length > 0) {
+                baseQuery += ' WHERE ' + whereClauses.join(' AND ');
+            }
+
+            baseQuery += ` ORDER BY ${sortField} ${sortOrder}`;
+
+            // Count query
+            let countQuery = 'SELECT COUNT(*) as total FROM products p JOIN users u ON p.store_id = u.id';
+            if (whereClauses.length > 0) {
+                countQuery += ' WHERE ' + whereClauses.join(' AND ');
+            }
+
+            // Execute paginated query
+            const result = await paginatedQuery(baseQuery, countQuery, params, page, limit);
+
+            // Process results
+            result.data.forEach((item, index) => {
+                result.data[index].image = item.image ? item.image.split(',') : [];
             });
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully!',
-                data: result,
-            });
+            res.status(200).send(createPaginatedResponse(
+                result.data,
+                result.total,
+                page,
+                limit,
+                'Admin products retrieved successfully'
+            ));
         } catch (error) {
-            console.log(error);
+            console.error('getProductAdmin error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
@@ -266,6 +386,11 @@ module.exports = {
             });
         }
     },
+
+    /**
+     * Add new product
+     * FIXED: SQL injection vulnerability
+     */
     addProduct: async (req, res) => {
         const {
             name,
@@ -279,45 +404,54 @@ module.exports = {
         } = req.body;
 
         try {
-            // check if product with id exist in our database
-            const checkProduct = `SELECT * FROM products WHERE name = ${database.escape(name)}`;
-            const resultCheck = await asyncQuery(checkProduct);
+            // Check if product exists
+            const checkQuery = 'SELECT * FROM products WHERE name = ?';
+            const existingProduct = await asyncQuery(checkQuery, [name]);
 
-            // check duplicate product in table products
-            if (resultCheck.length > 0) {
-                res.status(403).send({
+            if (existingProduct.length > 0) {
+                return res.status(403).send({
                     status: 'fail',
                     code: 403,
-                    message: 'product already exist',
+                    message: 'Product already exists',
                 });
-                return;
             }
 
-            // check regular price vs sale price
-            if (Object.prototype.hasOwnProperty.call(req.body, 'regularPrice' && 'salePrice')) {
-                if (regularPrice < salePrice) {
-                    res.status(403).send({
-                        status: 'fail',
-                        code: 403,
-                        message: 'Regular price must be greater than Sale Price',
-                    });
-                    return;
-                }
+            // Validate prices
+            if (regularPrice < salePrice) {
+                return res.status(403).send({
+                    status: 'fail',
+                    code: 403,
+                    message: 'Regular price must be greater than or equal to sale price',
+                });
             }
 
-            // insert new products into database
-            const add = `INSERT INTO products (\`name\`, \`description\`, weight, regular_price, sale_price, released_date, updated_date, store_id, status_id, stock) 
-                    VALUES (${database.escape(name)}, ${database.escape(description)}, ${database.escape(weight)}, ${database.escape(regularPrice)}, 
-                    ${database.escape(salePrice)}, '${today}', '${today}', ${database.escape(storeId)} , ${database.escape(statusId)}, ${database.escape(stock)})`;
-            await asyncQuery(add);
+            // Insert product with parameterized query
+            const insertQuery = `
+                INSERT INTO products
+                (name, description, weight, regular_price, sale_price, released_date,
+                 updated_date, store_id, status_id, stock)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
 
-            // send response
+            await asyncQuery(insertQuery, [
+                name,
+                description,
+                weight,
+                regularPrice,
+                salePrice,
+                today,
+                today,
+                storeId,
+                statusId,
+                stock,
+            ]);
+
             res.status(201).send({
                 status: 'success',
                 message: 'New product has been added to database',
             });
         } catch (error) {
-            console.log(error);
+            console.error('addProduct error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
@@ -325,66 +459,56 @@ module.exports = {
             });
         }
     },
+
+    /**
+     * Edit product
+     * FIXED: SQL injection, using parameterized queries
+     */
     editProduct: async (req, res) => {
         const { id } = req.params;
-        try {
-            // Check product in our database
-            const checkId = `SELECT * FROM products WHERE id = ${database.escape(id)}`;
-            const resultCheck = await asyncQuery(checkId);
 
-            // send response if product doesnt exists
-            if (resultCheck.length === 0) {
-                res.status(404).send({
+        try {
+            // Check if product exists
+            const checkQuery = 'SELECT * FROM products WHERE id = ?';
+            const existingProduct = await asyncQuery(checkQuery, [id]);
+
+            if (existingProduct.length === 0) {
+                return res.status(404).send({
                     status: 'fail',
                     code: 404,
-                    message: `Product with id = ${id} doesn't exists`,
+                    message: `Product with id = ${id} doesn't exist`,
                 });
-                return;
             }
 
-            // check regular price vs sale price
-            if (Object.prototype.hasOwnProperty.call(req.body, 'regular_price' && 'sale_price')) {
-                if (req.body.regular_price < req.body.sale_price) {
-                    res.status(403).send({
-                        status: 'fail',
-                        code: 403,
-                        message: 'Regular price must be greater than Sale Price',
-                    });
-                    return;
-                }
-            } else if (Object.prototype.hasOwnProperty.call(req.body, 'regular_price' || 'sale_price')) {
-                if (req.body.regular_price < resultCheck[0].sale_price) {
-                    res.status(403).send({
-                        status: 'fail',
-                        message: 'Regular price must be greater than Sale Price',
-                    });
-                } else if (resultCheck[0].regular_price < req.body.sale_price) {
-                    res.status(403).send({
-                        status: 'fail',
-                        code: 403,
-                        message: 'Regular price must be greater than Sale Price',
-                    });
-                } else if (resultCheck[0].regular_price < resultCheck[0].sale_price) {
-                    res.status(403).send({
-                        status: 'fail',
-                        code: 403,
-                        message: 'Regular price must be greater than Sale Price',
-                    });
-                }
-                return;
+            const product = existingProduct[0];
+
+            // Validate prices if provided
+            const newRegularPrice = req.body.regular_price || product.regular_price;
+            const newSalePrice = req.body.sale_price || product.sale_price;
+
+            if (newRegularPrice < newSalePrice) {
+                return res.status(403).send({
+                    status: 'fail',
+                    code: 403,
+                    message: 'Regular price must be greater than or equal to sale price',
+                });
             }
 
-            // edit product in database
-            const editQuery = `UPDATE products SET updated_date = '${today}', ${generateQuery(req.body)} WHERE id = ${resultCheck[0].id}`;
-            await asyncQuery(editQuery);
+            // Update product with parameterized query
+            const { setClause, values } = generateUpdateQuery({
+                ...req.body,
+                updated_date: today,
+            });
 
-            // send response
+            const updateQuery = `UPDATE products SET ${setClause} WHERE id = ?`;
+            await asyncQuery(updateQuery, [...values, id]);
+
             res.status(200).send({
                 status: 'success',
-                message: `Product with ${id} has been updated`,
+                message: `Product with id ${id} has been updated`,
             });
         } catch (error) {
-            console.log(error);
+            console.error('editProduct error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
@@ -392,41 +516,39 @@ module.exports = {
             });
         }
     },
+
+    /**
+     * Delete product
+     * FIXED: SQL injection vulnerability
+     */
     deleteProduct: async (req, res) => {
         const { id } = req.params;
 
         try {
-            // check if product with id is exists in our database
-            const checkProduct = `SELECT * FROM products WHERE id=${database.escape(id)}`;
-            const resultCheck = await asyncQuery(checkProduct);
+            // Check if product exists
+            const checkQuery = 'SELECT * FROM products WHERE id = ?';
+            const existingProduct = await asyncQuery(checkQuery, [id]);
 
-            // send response if product already exists
-            if (resultCheck.length === 0) {
-                res.status(404).send({
+            if (existingProduct.length === 0) {
+                return res.status(404).send({
                     status: 'fail',
                     code: 404,
-                    message: `products with id: ${id} doesn't exists`,
+                    message: `Product with id: ${id} doesn't exist`,
                 });
-                return;
             }
 
-            // delete data products in table products, product image, and product category
-            const delProducts = `DELETE FROM products WHERE id = ${database.escape(id)}`;
-            await asyncQuery(delProducts);
-            const delProcat = `DELETE FROM product_category WHERE product_id = ${database.escape(id)}`;
-            await asyncQuery(delProcat);
-            const delProTag = `DELETE FROM product_tag WHERE product_id = ${database.escape(id)}`;
-            await asyncQuery(delProTag);
-            const delImage = `DELETE FROM product_image WHERE product_id = ${database.escape(id)}`;
-            await asyncQuery(delImage);
+            // Delete related data and product
+            await asyncQuery('DELETE FROM product_category WHERE product_id = ?', [id]);
+            await asyncQuery('DELETE FROM product_tag WHERE product_id = ?', [id]);
+            await asyncQuery('DELETE FROM product_image WHERE product_id = ?', [id]);
+            await asyncQuery('DELETE FROM products WHERE id = ?', [id]);
 
-            // send result
             res.status(200).send({
                 status: 'success',
-                message: `Product with id: ${id} already deleted from database`,
+                message: `Product with id: ${id} has been deleted from database`,
             });
         } catch (error) {
-            console.log(error);
+            console.error('deleteProduct error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
@@ -434,22 +556,36 @@ module.exports = {
             });
         }
     },
+
+    /**
+     * Get product images
+     * FIXED: SQL injection vulnerability
+     */
     getProductImage: async (req, res) => {
         const { id } = req.query;
-        try {
-            // get product image
-            const query = `SELECT pi.id, pi.product_id, p.name, pi.image FROM product_image pi
-                        RIGHT JOIN products p ON pi.product_id = p.id
-                        ${id !== undefined ? `WHERE pi.product_id = ${id}` : ''}`;
-            const result = await asyncQuery(query);
 
-            // send response
+        try {
+            let query = `
+                SELECT pi.id, pi.product_id, p.name, pi.image
+                FROM product_image pi
+                RIGHT JOIN products p ON pi.product_id = p.id
+            `;
+
+            const params = [];
+            if (id !== undefined) {
+                query += ' WHERE pi.product_id = ?';
+                params.push(id);
+            }
+
+            const result = await asyncQuery(query, params);
+
             res.status(200).send({
                 status: 'success',
+                message: 'Product images retrieved successfully',
                 data: result,
             });
         } catch (error) {
-            console.log(error);
+            console.error('getProductImage error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
@@ -457,101 +593,105 @@ module.exports = {
             });
         }
     },
+
+    /**
+     * Add product image
+     * FIXED: SQL injection vulnerability
+     */
     addProductImage: async (req, res) => {
         let { id: productId } = req.params;
 
-        // check productId
+        // Check productId
         if (productId === 'new-product') {
-            // get product id
-            const lastId = 'SELECT MAX(id) AS AUTO_INCREMENT FROM products;';
-            const getLastId = await asyncQuery(lastId);
+            const lastIdQuery = 'SELECT MAX(id) AS AUTO_INCREMENT FROM products';
+            const getLastId = await asyncQuery(lastIdQuery);
             productId = getLastId[0].AUTO_INCREMENT;
         }
 
-        // check file upload
-        if (req.files === undefined) {
-            res.status(400).send({
+        // Check file upload
+        if (req.files === undefined || req.files.length === 0) {
+            return res.status(400).send({
                 status: 'fail',
                 code: 400,
-                message: 'no image',
+                message: 'No images provided',
             });
-            return;
         }
 
         try {
-            // check if product with id exist in our database
-            const checkProduct = `SELECT * FROM products WHERE id = '${parseInt(productId, 10)}'`;
-            const check = await asyncQuery(checkProduct);
+            // Check if product exists
+            const checkQuery = 'SELECT * FROM products WHERE id = ?';
+            const existingProduct = await asyncQuery(checkQuery, [productId]);
 
-            // check duplicate product in table products
-            if (check.length === 0) {
-                res.status(404).send({
+            if (existingProduct.length === 0) {
+                return res.status(404).send({
                     status: 'fail',
                     code: 404,
-                    message: 'Product doesn\'t exists in our database',
+                    message: "Product doesn't exist in our database",
                 });
-                return;
             }
 
-            // insert new products into database
-            const promises = [];
-            req.files.forEach((item) => {
-                const add = `INSERT INTO product_image (product_id, image) VALUES (${parseInt(productId, 10)}, 'image/products/${item.filename}')`;
-                asyncQuery(add);
-            });
+            // Insert images with parameterized queries
+            const insertQuery = 'INSERT INTO product_image (product_id, image) VALUES (?, ?)';
+            const promises = req.files.map((file) =>
+                asyncQuery(insertQuery, [productId, `image/products/${file.filename}`])
+            );
+
             await Promise.all(promises);
 
-            // send response
             res.status(200).send({
                 status: 'success',
-                message: `New image of product with id: ${parseInt(productId, 10)} has been added to database`,
+                message: `New images for product id: ${productId} have been added to database`,
             });
         } catch (error) {
-            console.log(error);
+            console.error('addProductImage error:', error);
+
             if (error.code === 'LIMIT_UNEXPECTED_FILE') {
-                res.status(500).send({
+                return res.status(500).send({
                     status: 'fail',
                     code: 500,
-                    message: 'Too many files to upload.',
+                    message: 'Too many files to upload',
                 });
-                return;
             }
+
             res.status(500).send({
                 status: 'fail',
                 code: 500,
-                message: `Error when trying upload many files: ${error}`,
+                message: error.message,
             });
         }
     },
+
+    /**
+     * Edit product image
+     * FIXED: SQL injection vulnerability
+     */
     editProductImage: async (req, res) => {
         const { image } = req.body;
         const { id } = req.params;
-        try {
-            // Check product in our database
-            const checkId = `SELECT * FROM product_image WHERE id = ${database.escape(id)}`;
-            const resultCheck = await asyncQuery(checkId);
 
-            // send response if product doesnt exists
-            if (resultCheck.length === 0) {
-                res.status(404).send({
+        try {
+            // Check if image exists
+            const checkQuery = 'SELECT * FROM product_image WHERE id = ?';
+            const existingImage = await asyncQuery(checkQuery, [id]);
+
+            if (existingImage.length === 0) {
+                return res.status(404).send({
                     status: 'fail',
                     code: 404,
-                    message: `Product image with id = ${id} doesn't exists`,
+                    message: `Product image with id = ${id} doesn't exist`,
                 });
-                return;
             }
 
-            // edit product in database
-            const editQuery = `UPDATE product_image SET image = ${database.escape(image)} WHERE id = ${parseInt(id, 10)}`;
-            await asyncQuery(editQuery);
+            // Update image
+            const updateQuery = 'UPDATE product_image SET image = ? WHERE id = ?';
+            await asyncQuery(updateQuery, [image, id]);
 
-            // send response
             res.status(200).send({
                 status: 'success',
                 message: `Product image with id: ${id} has been updated`,
             });
         } catch (error) {
-            console.log(error);
+            console.error('editProductImage error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
@@ -559,35 +699,37 @@ module.exports = {
             });
         }
     },
+
+    /**
+     * Delete product image
+     * FIXED: SQL injection vulnerability
+     */
     deleteProductImage: async (req, res) => {
         const { id } = req.params;
 
         try {
-            // check if product with id is exists in our database
-            const checkProduct = `SELECT * FROM product_image WHERE id = ${database.escape(id)}`;
-            const resultCheck = await asyncQuery(checkProduct);
+            // Check if image exists
+            const checkQuery = 'SELECT * FROM product_image WHERE id = ?';
+            const existingImage = await asyncQuery(checkQuery, [id]);
 
-            // send response if product already exists
-            if (resultCheck.length === 0) {
-                res.status(404).send({
+            if (existingImage.length === 0) {
+                return res.status(404).send({
                     status: 'fail',
                     code: 404,
-                    message: `product image with id: ${id} doesn't exists.`,
+                    message: `Product image with id: ${id} doesn't exist`,
                 });
-                return;
             }
 
-            // delete data products in table product image
-            const delImage = `DELETE FROM product_image WHERE id = ${database.escape(id)}`;
-            await asyncQuery(delImage);
+            // Delete image
+            const deleteQuery = 'DELETE FROM product_image WHERE id = ?';
+            await asyncQuery(deleteQuery, [id]);
 
-            // send response
             res.status(200).send({
                 status: 'success',
-                message: `Product image with id: ${id} already deleted from database`,
+                message: `Product image with id: ${id} has been deleted from database`,
             });
         } catch (error) {
-            console.log(error);
+            console.error('deleteProductImage error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
