@@ -1,0 +1,175 @@
+.sidebarModal {
+    &.right {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 99999;
+        overflow: hidden;
+        opacity: 0;
+        visibility: hidden;
+        transition: $transition;
+
+        .modal-innter-content {
+            width: 400px;
+            background-color: #ffffff;
+            height: 100%;
+            margin-right: auto;
+            overflow-y: scroll;
+            // margin-right: -500px;
+            transition: $transition;
+
+            .modal-body {
+                padding: 40px;
+                h3 {
+                    margin-bottom: 25px;
+                    padding-bottom: 5px;
+                    position: relative;
+                    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                    font: {
+                        size: 20px;
+                        weight: 600;
+                    }
+                    &::before {
+                        width: 50px;
+                        height: 1px;
+                        bottom: -1px;
+                        content: '';
+                        position: absolute;
+                        left: 0;
+                        background-color: $main-color;
+                    }
+                }
+                .search-container {
+                    margin-bottom: 2vh;
+                    @media screen and (min-width: 768px) {
+                        display: none;
+                    }
+                    .input-group {
+                        .input-group-prepend {
+                            .btn-outline-primary {
+                                border-right: none;
+                                color: $gray-color;
+                                &:focus,
+                                &:after,
+                                &:active {
+                                    box-shadow: none;
+                                    border: 1px solid $gray-color;
+                                    border-right: none;
+                                    background-color: transparent;
+                                }
+                                &:hover {
+                                    color: $gray-color;
+                                    background-color: $white-color;
+                                    box-shadow: none;
+                                }
+                                &:disabled {
+                                    background-color: #e9ecef;
+                                    opacity: 1;
+                                }
+                            }
+                        }
+                        .form-control {
+                            border-left: none;
+                        }
+                    }
+                    .others-option {
+                        display: flex;
+                        justify-content: space-evenly;
+                        padding: {
+                            top: 1vh;
+                            bottom: 1vh;
+                        }
+                        .option-item {
+                            display: inline-block;
+                            margin: {
+                                left: 15px;
+                                right: 15px;
+                            }
+                            position: relative;
+                            z-index: 3;
+
+                            &:first-child {
+                                margin-left: 0;
+                            }
+                            .icon-btn-box {
+                                position: relative;
+                                top: 1px;
+
+                                .icon-btn {
+                                    font-size: 25px;
+                                    cursor: pointer;
+                                    color: $black-color;
+                                    transition: $transition;
+                                }
+                                a {
+                                    display: inline-block;
+                                    position: relative;
+                                    color: $black-color;
+
+                                    span {
+                                        position: absolute;
+                                        right: -4px;
+                                        top: 0px;
+                                        width: 14px;
+                                        height: 14px;
+                                        text-align: center;
+                                        line-height: 13.9px;
+                                        border-radius: 50%;
+                                        color: $white-color;
+                                        background-color: $main-color;
+                                        font: {
+                                            size: 10px;
+                                            weight: 600;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                .navbar-nav {
+                    .nav-item {
+                        border-bottom: 1px solid rgba(0, 0, 0, 0.085);
+                        padding: {
+                            top: 2vh;
+                            bottom: 2vh;
+                        }
+                    }
+                }
+            }
+        }
+
+        &.active {
+            opacity: 1;
+            visibility: visible;
+
+            .modal-innter-content {
+                margin-right: 0;
+            }
+        }
+    }
+
+    .close {
+        color: $black-color;
+        font-size: 28px;
+        outline: 0 !important;
+        line-height: initial;
+        transition: $transition;
+        position: absolute;
+        left: 350px;
+        top: 37px;
+        z-index: 1;
+
+        &:not(:disabled):not(.disabled) {
+            &:hover,
+            &:focus {
+                color: red;
+                text-decoration: none;
+                opacity: 1;
+            }
+        }
+    }
+}

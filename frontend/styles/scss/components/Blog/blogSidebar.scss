@@ -1,0 +1,381 @@
+@import "../../utils/variable";
+
+.widget-area {
+    padding-left: 15px;
+    .widget {
+        margin-bottom: 35px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+        .widget-title {
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eeeeee;
+            font: {
+                size: 21px;
+                weight: 700;
+            };
+            &::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: 50px;
+                height: 1px;
+                bottom: -1px;
+                background-color: $main-color;
+            }
+        }
+    }
+    .widget_search {
+        display: block;
+        @media only screen and (max-width:992px) {
+            display: none;
+        }
+        form {
+            position: relative;
+            
+            .screen-reader-text {
+                display: none;
+            }
+            label {
+                display: block;
+                margin-bottom: 0;
+            }
+            .search-field {
+                height: 50px;
+                color: $black-color;
+                background-color: #eef5f9;
+                display: block;
+                width: 100%;
+                border-radius: 5px;
+                padding: 0 0 0 15px;
+                border: none;
+                transition: $transition;
+                font: {
+                    size: $font-size;
+                    weight: 500;
+                };
+                &::placeholder {
+                    color: $gray-color;
+                    transition: $transition;
+                }
+                &:focus {
+                    &::placeholder {
+                        color: transparent;
+                    }
+                }
+            }
+            button {
+                border: none;
+                background-color: $main-color;
+                color: $white-color;
+                height: 40px;
+                width: 40px;
+                position: absolute;
+                right: 5px;
+                transition: $transition;
+                border-radius: 5px;
+                top: 5px;
+                font-size: 20px;
+
+                &:hover, &:focus {
+                    background-color: $black-color;
+                    color: $white-color;
+                }
+            }
+        }
+    }
+    .widget_posts_thumb {
+        position: relative;
+        overflow: hidden;
+        
+        .item {
+            overflow: hidden;
+            margin-bottom: 15px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+            .thumb {
+                float: left;
+                height: 80px;
+                overflow: hidden;
+                display: block;
+                position: relative;
+                width: 80px;
+                margin-right: 15px;
+                z-index: 1;
+
+                .fullimage {
+                    width: 80px;
+                    height: 80px;
+                    display: inline-block;
+                    border-radius: 5px;
+                    background: {
+                        size: cover !important;
+                        repeat: no-repeat;
+                        position: center center !important;
+                    };
+                    &.bg1 {
+                        background-image: url(http://localhost:2000/image/blog/blog7.jpg);
+                    }
+                    &.bg2 {
+                        background-image: url(http://localhost:2000/image/blog/blog8.jpg);
+                    }
+                    &.bg3 {
+                        background-image: url(http://localhost:2000/image/blog/blog5.jpg);
+                    }
+                }
+                &::before, &::after {
+                    transition: all .8s cubic-bezier(.2, 1, .22, 1);
+                    content: '';
+                    background-color: $white-color;
+                    position: absolute;
+                    z-index: 1;
+                    top: 50%;
+                    left: 50%;
+                    opacity: 0;
+                    transform: translate(-50%, -50%);
+                }
+                &::before {
+                    width: 40px;
+                    height: 1px;
+                    left: 100%;
+                }
+                &::after {
+                    height: 40px;
+                    width: 1px;
+                    top: 0;
+                }
+            }
+            .info {
+                overflow: hidden;
+                margin-top: 5px;
+
+                span {
+                    display: block;
+                    color: $gray-color;
+                    text-transform: uppercase;
+                    margin: {
+                        top: -2px;
+                        bottom: 5px;
+                    };
+                    font: {
+                        size: 12px;
+                    };
+                }
+                .title {
+                    margin-bottom: 0;
+                    line-height: 1.4;
+                    font: {
+                        size: 18px;
+                        weight: 600;
+                    };
+                    a {
+                        display: inline-block;
+                    }
+                }
+            }
+            &:hover {
+                .thumb {
+                    &::before, &::after {
+                        opacity: 1;
+                        top: 50%;
+                        left: 50%;
+                    }
+                }
+            }
+        }
+    }
+    .widget_categories {
+        ul {
+            padding-left: 0;
+            margin-bottom: 0;
+            list-style-type: none;
+
+            li {
+                position: relative;
+                margin-bottom: 12px;
+                overflow: hidden;
+                color: $black-color;
+                padding-left: 18px;
+                font: {
+                    weight: 600;
+                    size: $font-size;
+                };
+                &:last-child {
+                    margin-bottom: 0;
+                }
+                &::before {
+                    background: $main-color;
+                    height: 8px;
+                    width: 8px;
+                    content: '';
+                    border-radius: 50%;
+                    left: 0;
+                    top: 7px;
+                    position: absolute;
+                }
+                a {
+                    color: $black-color;
+                    display: block;
+
+                    &:hover {
+                        color: $main-color;
+                    }
+                }
+                .post-count {
+                    color: $gray-color;
+                    font-size: 14px;
+                    float: right;
+                }
+            }
+        }
+    }
+    .widget_tag_cloud {
+        .widget-title {
+            margin-bottom: 17px;
+        }
+    }
+    .tagcloud {
+        a {
+            display: inline-block;
+            background-color: #f6f6f6;
+            color: $black-color;
+            padding: 7px 15px;
+            border: none;
+            border-radius: 3px;
+            font: {
+                weight: 600;
+                size: 14px !important;
+            };
+            margin: {
+                top: 8px;
+                right: 4px;
+            };
+            &:hover, &:focus {
+                color: $white-color;
+                background-color: $main-color;
+            }
+        }
+    }
+    .widget_instagram {
+        ul {
+            padding-left: 0;
+            list-style-type: none;
+            flex-wrap: wrap;
+            display: flex;
+            margin: {
+                bottom: -10px;
+                left: -5px;
+                right: -5px;
+            };
+            li {
+                flex: 0 0 33.3333333333%;
+                max-width: 33.3333333333%;
+                padding: {
+                    bottom: 10px;
+                    right: 5px;
+                    left: 5px;
+                };
+                a {
+                    position: relative;
+
+                    &::before {
+                        content: '';
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                        height: 100%;
+                        background-color: $main-color;
+                        transition: $transition;
+                        opacity: 0;
+                        visibility: hidden;
+                    }
+                    &:hover {
+                        &::before {
+                            opacity: .70;
+                            visibility: visible;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .widget_contact {
+        position: relative;
+        z-index: 1;
+        border-radius: 5px;
+        height: 400px;
+        text-align: center;
+        background: {
+            image: url(http://localhost:2000/image/blog/offer-bg.jpg);
+            position: center center;
+            size: cover;
+            repeat: no-repeat;
+        };
+        &::before {
+            width: 100%;
+            height: 100%;
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            border-radius: 5px;
+            background-color: $main-color;
+            opacity: .70;
+            z-index: -1;
+        }
+        .text {
+            position: absolute;
+            left: 0;
+            bottom: 25px;
+            right: 0;
+
+            .icon {
+                width: 65px;
+                height: 65px;
+                border: 2px dashed $main-color;
+                position: relative;
+                border-radius: 50%;
+                font-size: 35px;
+                transition: $transition;
+                background-color: $white-color;
+                color: $main-color;
+                margin: {
+                    left: auto;
+                    right: auto;
+                    bottom: 17px;
+                };
+                i {
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                }
+            }
+            span {
+                display: block;
+                color: $white-color;
+                margin-bottom: 8px;
+                font: {
+                    size: 16px;
+                    weight: 600;
+                };
+            }
+            h4 {
+                color: $white-color;
+                margin: 0;
+                font: {
+                    weight: 800;
+                    size: 25px;
+                };
+            }
+        }
+    }
+}

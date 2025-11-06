@@ -1,0 +1,46 @@
+@import "../../utils/variable";
+
+.container-products {
+    background-color: $white-color;
+    position: relative;
+    bottom: 150px;
+    border-radius: 10px;
+    width: 95%;
+    margin: {
+        left: auto;
+        right: auto;
+    };
+    padding: {
+        top: 3%;
+        left: 1%;
+        right: 1%;
+        bottom: 3%;
+    }
+    .btn-prev-arrow {
+        position: absolute;
+        top: 45%;
+        left: -2%;
+        z-index: 3;
+        box-shadow: none;
+    }
+    .btn-next-arrow {
+        position: absolute;
+        top: 45%;
+        right: -2%;
+        box-shadow: none;
+        z-index: 3;
+    }
+    .card-container{
+        width: 90%;
+        display: flex !important;
+        justify-content: space-evenly !important;
+        margin: {
+            left: auto;
+            right: auto;
+        };
+        padding: {
+            right: 1%;
+            left: 1%;
+        };
+    }
+}

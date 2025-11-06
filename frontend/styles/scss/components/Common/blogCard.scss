@@ -1,0 +1,110 @@
+@import "../../utils/variable";
+.blog-area {
+    background-color: $white-color;
+    .container-fluid {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+}
+
+.single-blog-post {
+    position: relative;
+    margin-bottom: 30px;
+
+    .post-image {
+        overflow: hidden;
+        position: relative;
+        border-radius: 5px 5px 0 0;
+        
+        a {
+            display: block;
+            border-radius: 5px 5px 0 0;
+
+            img {
+                border-radius: 5px 5px 0 0;
+                transition: $transition;
+                width: 100%;
+                height: 270px;
+                object-fit: contain;
+            }
+        }
+        .date {
+            position: absolute;
+            right: -100%;
+            top: 20px;
+            background-color: $white-color;
+            color: $black-color;
+            padding: 5px 10px 6px;
+            transition: $transition;
+            visibility: hidden;
+            font: {
+                style: italic;
+                size: 15px;
+                weight: 600;
+            };
+        }
+    }
+    .post-content {
+        margin-top: 20px;
+
+        .category {
+            display: block;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: $main-color;
+            font: {
+                weight: 600;
+                size: 13px;
+            };
+        }
+        h3 {
+            margin-bottom: 0;
+            line-height: 1.3;
+            font: {
+                size: 23px;
+                weight: 700;
+            };
+            
+            a {
+                display: inline-block;
+            }
+        }
+        .details-btn {
+            margin-top: 13px;
+            display: inline-block;
+            position: relative;
+            font: {
+                size: $font-size;
+                weight: 600;
+            };
+            &::before {
+                width: 100%;
+                height: 1px;
+                background-color: $black-color;
+                content: '';
+                position: absolute;
+                transition: $transition;
+                left: 0;
+                bottom: 0;
+            }
+            &:hover {
+                color: $main-color;
+
+                &::before {
+                    background-color: $main-color;
+                }
+            }
+        }
+    }
+    &:hover {
+        .post-image {
+            img {
+                transform: scale(1.07) rotate(2deg);
+            }
+            .date {
+                visibility: visible;
+                right: 0;
+            }
+        }
+    }
+}

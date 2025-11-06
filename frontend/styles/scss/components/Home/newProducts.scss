@@ -1,0 +1,36 @@
+@import "../../utils/variable";
+
+.container-new-products {
+    margin: {
+        top: -100px;
+        bottom: 50px;
+        left: auto;
+        right: auto;
+    }
+    padding: {
+        left: 2%;
+        right: 2%;
+        bottom: 2%;
+    };
+    border-bottom: 1px solid $gray-color;
+    .title-new-products {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: {
+            bottom: 2%;
+        }
+        border-bottom: 1px solid $gray-color;
+        margin-bottom: 2%;
+    }
+    .btn-outline-primary{
+        border: 1px solid $main-color;
+        background-color: transparent;
+        color: $main-color;
+        &:hover{
+            background-color: $main-color;
+            color: $white-color;
+        }
+    }
+}

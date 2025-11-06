@@ -1,0 +1,437 @@
+@import '../utils/variable';
+
+body {
+    background-color: #f5f5f5;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font: {
+        family: $font-family1;
+        size: $font-size;
+    }
+}
+img {
+    max-width: 100%;
+    height: auto;
+}
+.img-rounded {
+    border-radius: 10px;
+}
+.img-circle {
+    border-radius: 50%;
+}
+.d-table {
+    width: 100%;
+    height: 100%;
+
+    &-cell {
+        vertical-align: middle;
+    }
+}
+:focus {
+    outline: 0 !important;
+}
+a {
+    transition: $transition;
+    color: $black-color;
+    text-decoration: none;
+
+    &:hover {
+        color: $main-color;
+        text-decoration: none;
+    }
+}
+p {
+    margin-bottom: 15px;
+    color: $gray-color;
+    line-height: 1.8;
+    font-size: $font-size;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: $black-color;
+    font-family: $font-family2;
+}
+.ptb-100 {
+    padding: {
+        top: 100px;
+        bottom: 100px;
+    }
+}
+.pt-100 {
+    padding-top: 100px;
+}
+.pb-100 {
+    padding-bottom: 100px;
+}
+.ptb-70 {
+    padding: {
+        top: 70px;
+        bottom: 70px;
+    }
+}
+.pt-70 {
+    padding-top: 70px;
+}
+.pb-70 {
+    padding-bottom: 70px;
+}
+.bg-f5f5f5 {
+    background-color: #f5f5f5;
+}
+.jarallax {
+    background-attachment: fixed;
+}
+/*button*/
+.default-btn {
+    display: inline-block;
+    border: 1px solid $main-color;
+    padding: 10px 30px;
+    transition: $transition;
+    text-transform: uppercase;
+    background-color: $main-color;
+    color: $white-color;
+    font: {
+        size: 14px;
+        weight: 600;
+    }
+    &:hover {
+        background-color: transparent;
+        color: $black-color;
+        border-color: $black-color;
+    }
+}
+.default-btn[disabled] {
+    opacity: 0.5;
+    &:hover {
+        background-color: $main-color;
+        color: $white-color;
+        border-color: $main-color;
+    }
+}
+.optional-btn {
+    display: inline-block;
+    border: 1px solid $black-color;
+    padding: 10px 30px;
+    transition: $transition;
+    text-transform: uppercase;
+    background-color: transparent;
+    color: $black-color;
+    font: {
+        size: 14px;
+        weight: 600;
+    }
+    &:hover {
+        background-color: $main-color;
+        color: $white-color;
+        border-color: $main-color;
+    }
+}
+.btn-primary {
+    background-color: $main-color;
+    border: 1px solid $main-color;
+    &:hover {
+        background-color: transparent;
+        border: 1px solid $main-color;
+        color: $main-color;
+    }
+    &:focus {
+        background-color: $main-color;
+        box-shadow: none;
+        &:hover {
+            background-color: $white-color;
+            border: 1px solid $main-color;
+            color: $main-color;
+        }
+    }
+}
+.btn-primary[disabled] {
+    background-color: $main-color;
+    &:hover {
+        background-color: $main-color;
+        color: $white-color;
+    }
+}
+.btn-outline-primary {
+    background-color: transparent;
+    color: $main-color;
+    border-color: $main-color;
+    &:hover,
+    .active,
+    &:active {
+        background-color: $main-color;
+        color: $white-color;
+    }
+}
+
+.btn.btn-outline-primary:active,
+.btn.btn-outline-primary:active.focus,
+.btn.btn-outline-primary:active:focus,
+.btn.btn-outline-primary:active:hover,
+.btn.btn-outline-primary:focus {
+    color: #fff;
+    background-color: $main-color;
+    border-color: $main-color;
+    outline: none;
+    box-shadow: none;
+}
+
+.btn-outline-primary[disabled] {
+    background-color: transparent;
+    color: $main-color;
+    border-color: $main-color;
+}
+
+/*section-title*/
+.section-title {
+    text-align: center;
+    max-width: 720px;
+    margin: {
+        left: auto;
+        right: auto;
+        bottom: 50px;
+    }
+    span {
+        display: block;
+        margin-bottom: 8px;
+        color: $main-color;
+        font-weight: 600;
+    }
+    h2 {
+        margin-bottom: 0;
+        font: {
+            size: clamp(30px, 1vw, 35px);
+            weight: 700;
+        }
+    }
+    &.text-left {
+        max-width: 100%;
+        position: relative;
+        margin: {
+            left: 0;
+            bottom: 30px;
+            right: 0;
+        }
+        .default-btn {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+        }
+    }
+}
+
+.chip-btn {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2%;
+    background-color: $main-color;
+    color: #fff;
+    i {
+        &:last-child {
+            color: black;
+            border-radius: 50%;
+            border: 1px solid #fff;
+        }
+    }
+    &:hover {
+        background-color: #fff;
+        color: $main-color;
+        i {
+            &:last-child {
+                border-color: $main-color;
+                color: $main-color;
+            }
+        }
+    }
+}
+
+// sub section title
+.sub-section-title {
+    margin-bottom: 25px;
+    position: relative;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eeeeee;
+    font: {
+        size: clamp(18px, 1vw, 21px);
+        weight: 700;
+    }
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 50px;
+        height: 1px;
+        bottom: -1px;
+        background-color: $main-color;
+    }
+}
+/*form-control*/
+.form-control {
+    background-color: $white-color;
+    min-height: 48px;
+    // border-radius: 0;
+    box-shadow: unset !important;
+    padding: 0 0 0 15px;
+    border: 1px solid $gray-color;
+    // color: $black-color;
+    font-size: $font-size;
+    transition: $transition;
+
+    &:focus {
+        border: 1px solid $gray-color;
+        background-color: $white-color;
+
+        &::placeholder {
+            color: transparent;
+        }
+    }
+    &::placeholder {
+        transition: $transition;
+    }
+}
+textarea.form-control {
+    padding-top: 15px;
+    height: auto !important;
+}
+
+// pagination
+.pagination-area {
+    position: relative;
+    z-index: 1;
+    margin: {
+        top: 30px;
+    }
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 100%;
+        height: 1px;
+        background-color: #eeeeee;
+        z-index: -1;
+    }
+    .page-numbers {
+        color: $black-color;
+        border: none;
+        display: inline-block;
+        line-height: 1;
+        background-color: $white-color;
+        font: {
+            weight: 600;
+            size: 20px;
+        }
+        margin: {
+            left: -1px;
+            right: -1px;
+            top: -10px;
+            bottom: -10px;
+        }
+        padding: {
+            left: 8px;
+            right: 8px;
+        }
+        &:hover,
+        &:focus,
+        &.current {
+            color: $main-color;
+            transform: scale(1.2);
+        }
+        &.prev {
+            padding-right: 0;
+        }
+        &.next {
+            padding-left: 0;
+        }
+        &.prev,
+        &.next {
+            font-size: 28px;
+            position: relative;
+            top: 5px;
+            margin: {
+                left: -3px;
+                right: -3px;
+            }
+        }
+        &.disabled {
+            color: $gray-color;
+            cursor: not-allowed;
+        }
+    }
+}
+
+// dropdown
+.dropdown {
+    .dropdown-menu {
+        &.show {
+            overflow-y: scroll !important;
+            max-height: 50vh;
+        }
+    }
+}
+
+// dropdown hover
+.dropdown-hover {
+    position: relative;
+    display: inline-block;
+    &:hover {
+        .dropdown-content {
+            display: block;
+        }
+        .dropdown-btn {
+            opacity: 0.6;
+        }
+    }
+    .dropdown-btn {
+        background-color: inherit;
+        color: $black-color;
+        padding: 16px;
+        font-size: 25px;
+        border: none;
+        cursor: pointer;
+    }
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: $white-color;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        border-radius: 5px;
+        a {
+            display: block;
+            padding: {
+                left: 20px;
+                right: 20px;
+                top: 5px;
+                bottom: 5px;
+            }
+            text-decoration: none;
+            color: $black-color;
+            &:hover {
+                color: $main-color;
+                font-weight: bold;
+            }
+        }
+    }
+}
+// modal
+.modal {
+    overflow-y: auto;
+}

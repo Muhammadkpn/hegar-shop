@@ -1,0 +1,194 @@
+@import "../../utils/variable";
+
+.comments-area {
+    margin-top: 30px;
+
+    .comments-title {
+        margin: {
+            bottom: 30px;
+        };
+        line-height: initial;
+        font: {
+            size: 22px;
+            weight: 700;
+        };
+    }
+    ol, ul {
+        padding: 0;
+        margin: 0;
+        list-style-type: none;
+    }
+    .comment-list {
+        padding: 0;
+        margin: 0;
+        list-style-type: none;
+    }
+    .children {
+        margin-left: 20px;
+    }
+    .comment-body {
+        border-bottom: 1px dashed #eeeeee;
+        padding-left: 65px;
+        color: $black-color;
+        font-size: 14px;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+
+        .reply {
+            margin-top: 15px;
+
+            button {
+                border: 1px dashed #ded9d9 !important;
+                color: $black-color;
+                display: inline-block;
+                padding: 5px 20px;
+                border-radius: 30px;
+                text-transform: uppercase;
+                font: {
+                    size: 13px;
+                    weight: 600;
+                };
+                &:hover {
+                    color: $white-color;
+                    background-color: $main-color;
+                    border-color: $main-color;
+                }
+            }
+        }
+    }
+    .comment-author {
+        font-size: 18px;
+        margin-bottom: 0.4em;
+        position: relative;
+        z-index: 2;
+
+        .avatar {
+            height: 50px;
+            left: -65px;
+            position: absolute;
+            width: 50px;
+        }
+        .fn {
+            font: {
+                weight: 600;
+            };
+        }
+        .says {
+            display: none;
+        }
+    }
+    .comment-metadata {
+        margin-bottom: .8em;
+        color: $gray-color;
+        letter-spacing: 0.01em;
+        text-transform: uppercase;
+        font: {
+            size: 13px;
+            weight: 400;
+        };
+        span {
+            display: inline-block;
+            color: $gray-color;
+
+            &:hover {
+                color: $main-color;
+            }
+        }
+    }
+    .comment-respond {
+        margin-top: 30px;
+
+        .comment-reply-title {
+            margin-bottom: 0;
+            font: {
+                size: 22px;
+                weight: 700;
+            };
+            #cancel-comment-reply-link {
+                display: inline-block;
+            }
+        }
+        .comment-form {
+            overflow: hidden;
+        }
+        .comment-notes {
+            margin: {
+                bottom: 20px;
+                top: 10px;
+            };
+            .required {
+                color: red;
+            }
+        }
+        .comment-form-comment {
+            float: left;
+            width: 100%;
+        }
+        label {
+            display: none;
+        }
+        input[type="date"], input[type="time"], input[type="datetime-local"], input[type="week"], input[type="month"], input[type="text"], input[type="email"], input[type="url"], input[type="password"], input[type="search"], input[type="tel"], input[type="number"], textarea {
+            display: block;
+            width: 100%;
+            background-color: #f4f4f4;
+            border: none;
+            padding: 0 0 0 15px;
+            height: 50px;
+            outline: 0;
+            border-radius: 3px;
+            color: $black-color;
+            font: {
+                weight: 500;
+                size: $font-size;
+            };
+            &::placeholder {
+                transition: $transition;
+                color: $gray-color;
+            }
+            &:focus {
+                &::placeholder {
+                    color: transparent;
+                }
+            }
+        }
+        textarea {
+            height: auto !important;
+            padding-top: 15px;
+        }
+        .form-submit {
+            float: left;
+            width: 100%;
+
+            button {
+                background: $main-color;
+                border: none;
+                color: $white-color;
+                padding: 10px 30px 9px;
+                display: inline-block;
+                cursor: pointer;
+                text-transform: uppercase;
+                transition: $transition;
+                border-radius: 0;
+                font: {
+                    weight: 700;
+                    size: $font-size;
+                };
+                &:hover, &:focus {
+                    color: $white-color;
+                    background-color: $black-color;
+                }
+            }
+
+            .btn-cancel {
+                background: $white-color;
+                color: $main-color;
+                cursor: pointer;
+                border: 1px solid $main-color;
+                &:hover, &:focus {
+                    color: $white-color;
+                    background-color: $black-color;
+                }
+            }
+        }
+    }
+}

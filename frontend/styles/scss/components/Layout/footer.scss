@@ -1,0 +1,108 @@
+@import "../../utils/variable";
+
+.footer {
+    background-color: $main-color-2;
+    border-bottom: 1px solid $white-color;    
+    padding: {
+        top: 3%;
+        left: 2%;
+        right: 2%;
+        bottom: 1%;
+    }
+    .social {
+        padding-left: 0 !important;
+        list-style-type: none;
+        margin: {
+            bottom: 0;
+            left: 0 !important;
+        };
+        justify-content: flex-start !important;
+        @media only screen and (max-width: 768px){
+            justify-content: center !important;
+        }
+        li {
+            display: inline-block;
+            margin-right: 8px;
+
+            &:last-child {
+                margin-right: 0;
+            }
+            a {
+                width: 30px;
+                height: 30px;
+                text-align: center;
+                display: block;
+                color: $main-color;
+                background-color: #f4f4f4;
+                font-size: 18px;
+                position: relative;
+                border-radius: 2px;
+
+                i {
+                    position: absolute;
+                    left: 0;
+                    top: 50%;
+                    right: 0;
+                    transform: translateY(-49%);
+                }
+                &:hover {
+                    background-color: $main-color;
+                    color: $white-color;
+                }
+            }
+        }
+    }
+    .footer-title {
+        color: $white-color;
+    }
+    @media only screen and (max-width: 768px) {
+        justify-content: center;
+        .ft-1 {
+            text-align: center;
+        }
+        .footer-title {
+            margin: 1% 0;
+        }
+        h5.footer-title {
+            margin: 3% 0 1% 0;
+        }
+    }
+    .footer-text {
+        color: $gray-color;
+        font-weight: bold;
+        margin: 0;
+        &:hover {
+            color: $white-color;
+            cursor: pointer;
+        }
+    }
+    .footer-line {
+        border-top: 1px solid $white-color;
+        margin: 1% 0;
+    }
+    .copyright {
+        @media only screen and (max-width: 768px) {
+            text-align: center;
+        }
+    }
+    ul{
+        width: 100%;
+        display: flex;
+        list-style: none;
+        justify-content: flex-end;
+        li{
+            margin-left: 10px;
+            padding-left: 10px;
+            &:first-child {
+                margin-left: 0;
+                padding-left: 0;
+            }
+        }
+        @media only screen and (max-width: 768px) {
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+        }
+    }
+}

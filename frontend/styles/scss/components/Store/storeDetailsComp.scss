@@ -1,0 +1,120 @@
+.store-name {
+    background-color: $main-color;
+    padding: {
+        top: 10vmin;
+        right: 4vmin;
+        left: 4vmin;
+        bottom: 15vmin;
+    }
+    height: auto;
+    margin: 0;
+    h5 {
+        color: $white-color;
+        @media screen and (max-width: 776px) {
+            text-align: center !important;
+            margin-top: 2%;
+        }
+    }
+    p {
+        @media screen and (max-width: 776px) {
+            text-align: center !important;
+        }
+    }
+    .store-img {
+        width: 5vw;
+        height: 5vw;
+        object-fit: contain;
+        background-color: #fff;
+        @media screen and (max-width: 776px) {
+            width: 10vw;
+            height: 10vw;
+            display: block;
+            margin: auto;
+        }
+    }
+}
+
+.store-details {
+    width: 95%;
+    height: auto;
+    margin: auto;
+    position: relative;
+    bottom: 80px;
+    .tagcloud {
+        a {
+            display: inline-block;
+            background-color: #f6f6f6;
+            color: $black-color;
+            padding: 7px 15px;
+            border: none;
+            border-radius: 3px;
+            font: {
+                weight: 600;
+                size: 14px !important;
+            }
+            margin: {
+                top: 8px;
+                right: 4px;
+            }
+            &:hover,
+            &:focus {
+                color: $white-color;
+                background-color: $main-color;
+            }
+        }
+    }
+    .widget_categories {
+        ul {
+            padding-left: 0;
+            margin-bottom: 0;
+            list-style-type: none;
+            
+            li {
+                position: relative;
+                margin-bottom: 12px;
+                overflow: hidden;
+                color: $black-color;
+                padding-left: 18px;
+                font: {
+                    weight: 600;
+                    size: $font-size;
+                }
+                &:last-child {
+                    margin-bottom: 0;
+                }
+                &::before {
+                    background: $main-color;
+                    height: 8px;
+                    width: 8px;
+                    content: '';
+                    border-radius: 50%;
+                    left: 0;
+                    top: 7px;
+                    position: absolute;
+                }
+                a {
+                    color: $black-color;
+                    display: block;
+                    cursor: pointer;
+
+                    &:hover {
+                        color: $main-color;
+                    }
+                }
+                .post-count {
+                    color: $gray-color;
+                    font-size: 14px;
+                    float: right;
+                }
+            }
+        }
+    }
+    .widget_tags {
+        div {
+            a {
+                color: $black-color;
+                cursor: pointer;
+            }
+        }
+    }
+}

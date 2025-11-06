@@ -1,0 +1,28 @@
+@import "../../utils/variable";
+
+.container-features{
+    background-color: $main-color;
+    width: 100%;
+    padding: {
+        top: 5%;
+        bottom: 5%;
+        left: 2%;
+        right: 2%;
+    };
+    .title-features{
+        text-align: center;
+        color: $white-color;
+        margin-bottom: 5%;
+    }
+    .features-details{
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        .img-features{
+            width: 20%;
+        }
+        h6{
+            color: $white-color;
+        }
+    }
+}

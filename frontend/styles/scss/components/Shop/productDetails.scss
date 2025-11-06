@@ -1,0 +1,87 @@
+@import "../../utils/variable";
+
+.product-details-area{
+    background-color: $white-color;
+    .products-details-image {
+        img {
+            width: 100%;
+        }
+        .slick-slider {
+            position: relative;
+            padding: 0;
+            margin: 0;
+            list-style-type: none;
+        }
+        .slick-dots {
+            padding: 0;
+            text-align: center;
+            list-style-type: none;
+            display: flex;
+            flex-wrap: wrap;
+            margin: {
+                left: -5px;
+                right: -5px;
+                top: 0;
+                bottom: 0;
+            };
+            li {
+                display: block;
+                flex: 0 0 20%;
+                max-width: 20%;
+                position: relative;
+                padding: {
+                    left: 5px;
+                    right: 5px;
+                    top: 10px;
+                };
+                button {
+                    padding: 0;
+                    outline: 0;
+                    display: block;
+                    border: none;
+                    margin: 0;
+                    cursor: pointer;
+                }
+                img {
+                    transition: $transition;
+                }
+                &:hover, &.slick-active {
+                    img {
+                        opacity: .4;
+                    }
+                }
+            }
+        }
+        .slick-thumbs {
+            display: none;
+        }
+
+        .row {
+            margin: {
+                left: -8px;
+                right: -8px;
+                top: -15px;
+            };
+            .col-lg-6 {
+                padding: {
+                    left: 8px;
+                    right: 8px;
+                };
+                .single-products-details-image {
+                    margin-top: 15px;
+                }
+            }
+        }
+        .single-products-details-image {
+            margin-top: 30px;
+    
+            &:first-child {
+                margin-top: 0;
+            }
+        }
+    }
+}
+
+.related-products {
+    margin-top: 70px;
+}

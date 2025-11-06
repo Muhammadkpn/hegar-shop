@@ -1,0 +1,93 @@
+.account-comp {
+    background-color: $white-color;
+    position: relative;
+    bottom: 7vh;
+    .account-title {
+        background-color: $main-color;
+        height: auto;
+        padding: {
+            top: 4vh;
+            bottom: 5vh;
+        }
+        .btn-outline-primary {
+            background-color: #49d1ff;
+            color: $white-color;
+            &:hover {
+                opacity: 0.7;
+            }
+        }
+        .account-subtitle {
+            @media only screen and (max-width: 992px) {
+                position: relative;
+                bottom: 25px;
+                padding: {
+                    bottom: 3%;
+                }
+            }
+        }
+    }
+    .account-sidebar {
+        background-color: $white-color;
+        border-radius: 10px;
+        position: relative;
+        bottom: 50px;
+        .top-sidebar {
+            width: 100%;
+            padding: {
+                left: 3%;
+                right: 3%;
+                top: 5%;
+                bottom: 5%;
+            }
+            .username {
+                margin-bottom: 0;
+                color: $black-color;
+                font-weight: bold;
+                @media only screen and (max-width: 992px) {
+                    text-align: center;
+                }
+            }
+            .email {
+                margin-bottom: 0;
+                color: $main-color;
+                @media only screen and (max-width: 992px) {
+                    text-align: center;
+                }
+            }
+            .img-profile {
+                width: 5vw;
+                height: 5vw;
+                object-fit: contain;
+                @media only screen and (max-width: 992px) {
+                    width: 12vw;
+                    height: 12vw;
+                }
+                border: 1px solid rgba(0, 0, 0, 0.085);
+                padding: 1%;
+                display: block;
+                margin: auto;
+            }
+        }
+        ul {
+            padding: 0;
+            li {
+                list-style: none;
+                padding: {
+                    top: 20px;
+                    bottom: 20px;
+                    left: 20px;
+                }
+                border-top: 1px solid rgba(0, 0, 0, 0.085);
+                color: $gray-color;
+                font-size: 1em;
+                cursor: pointer;
+                @media only screen and (max-width: 992px) {
+                    text-align: center;
+                }
+                &:hover {
+                    color: $main-color;
+                }
+            }
+        }
+    }
+}

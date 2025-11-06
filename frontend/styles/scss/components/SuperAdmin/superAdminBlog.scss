@@ -1,0 +1,27 @@
+// Super Admin Blog
+.SA-blog {
+    padding: 2%;
+    .img-admin-blog {
+        width: 150px;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+    }
+    .form-blog {
+        input[type="file"] {
+            display: none;
+        }
+        .custom-file-upload {
+            margin: 1%;
+            border: 1px solid #ccc;
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+            color: $main-color;
+            &:hover {
+                color: white;
+                background-color: $main-color;
+            }
+        }
+    }
+}

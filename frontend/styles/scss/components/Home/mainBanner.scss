@@ -1,0 +1,71 @@
+@import '../../utils/variable';
+
+.jumbotron {
+    height: 750px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    .text-jumbotron {
+        color: $black-color;
+        font-size: clamp(14px, 1vw, 18px);
+    }
+    .text-jumbotron-lg {
+        font-size: clamp(32px, 1.5vw, 40px);
+    }
+    .store {
+        color: $main-color;
+    }
+    .search-container {
+        width: 50%;
+        @media screen and (max-width: 992px){
+            width: 75%;
+        }
+        @media screen and (max-width: 768px){
+            width: 100%;
+        }
+        .input-group {
+            width: 100%;
+            .input-group-text{
+                background-color: $white-color;
+                border: none;
+            }
+            .form-control{
+                border: none !important;
+            }
+            #input-group-dropdown-1{
+                border: none;
+                background-color: $gray-color;
+                color: $white-color;
+                &:hover, &:after, &:focus {
+                    color: $white-color;
+                }
+            }
+        }
+        .search-group {
+            box-shadow: 5px 10px 8px #888888;
+            list-style-type: none;
+            border-radius: 5px;
+            padding: {
+                left: 0;
+            };
+            height: auto;
+            max-height: 50vh;
+            background-color: #fff;
+            overflow-y: scroll;
+            position: relative;
+            z-index: 99;
+            .search-group-item {
+                padding: 1%;
+                border-bottom: 1px dashed rgba(0, 0, 0, 0.319);
+                &:last-child {
+                    border-bottom: none;
+                }
+                .search-img {
+                    width: 10vmin;
+                    height: 10vmin;
+                    object-fit: contain;
+                }
+            }
+        }
+    }
+}

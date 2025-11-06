@@ -1,0 +1,77 @@
+// library
+@import '~bootstrap/scss/bootstrap';
+@import '~slick-carousel/slick/slick.css';
+@import '~slick-carousel/slick/slick-theme.css';
+@import 'font-awesome/scss/fontawesome.scss';
+@import 'font-awesome/scss/solid.scss';
+@import 'font-awesome/scss/regular.scss';
+@import 'font-awesome/scss/brands.scss';
+@import 'font-awesome/scss/v4-shims.scss';
+@import 'boxicons.min.css';
+@import 'flaticon.css';
+@import './base/reset';
+@import './utils/variable';
+@import '~react-datepicker/dist/react-datepicker.css';
+// @import '../../node_modules/react-datepicker/dist/react-datepicker.css';
+@import '~react-datepicker/dist/react-datepicker-cssmodules.css';
+@import '../../node_modules/react-quill/dist/quill.snow.css';
+
+// general
+@import './components/Layout/navbar.scss';
+@import './components/Layout/footer.scss';
+@import './components/Common/goTop.scss';
+@import './components/Common/subscribe.scss';
+@import './components/Common/productCard.scss';
+@import './components/Common/storeCard.scss';
+@import './components/Common/blogCard.scss';
+@import './components/Common/pageTitle.scss';
+@import './components/Common/drawer.scss';
+
+// Homepage
+@import './components/Home/mainBanner.scss';
+@import './components/Home/newProducts.scss';
+@import './components/Home/specialPromo.scss';
+@import './components/Home/features.scss';
+@import './components/Home/recentBlog.scss';
+@import './components/Home/bestStore.scss';
+
+// Authentication
+@import './components/Authentication/authComp.scss';
+
+// shop
+@import './components/Shop/shopComp.scss';
+@import './components/Shop/productDetails.scss';
+@import './components/Shop/productDetailsTab.scss';
+@import './components/Shop/productImage.scss';
+@import './components/Shop/cartComp.scss';
+@import './components/Shop/checkoutComp.scss';
+@import './components/Shop/productQuickView.scss';
+
+// blog
+@import './components/Blog/blogComp.scss';
+@import './components/Blog/blogSidebar.scss';
+@import './components/Blog/blogDetails.scss';
+@import './components/Blog/commentsLists.scss';
+
+// contact
+@import './components/Contact/contactForm.scss';
+@import './components/Contact/contactInfo.scss';
+
+// store
+@import './components/Store/storeListComp.scss';
+@import './components/Store/storeDetailsComp.scss';
+@import './components/Store/storeSales.scss';
+@import './components/Store/storeAccountComp.scss';
+@import './components/Store/storeProducts.scss';
+@import './components/Store/storeWithdraw.scss';
+
+// account
+@import './components/Account/accountComp.scss';
+@import './components/Account/dashboard.scss';
+@import './components/Account/orders.scss';
+@import './components/Account/download.scss';
+@import './components//Account/accountDetails.scss';
+
+// super admin
+@import './components/SuperAdmin/superAdminProducts.scss';
+@import './components/SuperAdmin/superAdminBlog.scss';

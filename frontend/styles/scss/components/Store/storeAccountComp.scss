@@ -1,0 +1,46 @@
+.store-account-container{
+    .store-account-content{
+        width: 97vw;
+        display: block;
+        margin: auto;
+        position: relative;
+        bottom: 10vh;
+        background-color: $white-color;
+        .store-account-sidebar{
+            .store-menu {
+                padding: 3%;
+                display: none;
+                @media screen and (max-width: 992px) {
+                    display: block;
+                }
+            }
+            #store-menu-collapse, #super-admin-collapse {
+                @media screen and (min-width: 992px) {
+                    display: block !important;
+                }
+            }
+            .title-sidebar{
+                background-color: #F6F9FC;
+                color: #777;
+                font-weight: bold;
+                &:first-child{
+                    border-top-left-radius: 50%;
+                }
+            }
+        }
+    }
+}
+
+.store-settings-container{
+    .nav-link{
+        border-bottom: 1px solid #ccc;
+        border-radius: 0;
+    }
+    .nav-link.active{
+        border-bottom: 2px solid $main-color;
+        background-color: transparent;
+        border-radius: 0;
+        color: $main-color;
+        font-weight: bold;
+    }
+}

@@ -1,0 +1,60 @@
+@import '../../utils/variable';
+
+form {
+    .form-group {
+        .input-group {
+            .btn-outline-primary {
+                color: $gray-color;
+                border: 1px solid $gray-color;
+                &:hover {
+                    color: $gray-color;
+                    background-color: $white-color;
+                    box-shadow: none;
+                }
+                &:disabled {
+                    background-color: #e9ecef;
+                    opacity: 1;
+                }
+            }
+            .input-group-prepend {
+                .btn-outline-primary {
+                    border-right: none;
+                    &:focus,
+                    &:after,
+                    &:active {
+                        box-shadow: none;
+                        border: 1px solid $gray-color;
+                        border-right: none;
+                        background-color: transparent;
+                    }
+                }
+            }
+            .input-group-append {
+                .btn-outline-primary {
+                    &:focus,
+                    &:after,
+                    &:active {
+                        box-shadow: none;
+                        border: 1px solid $gray-color;
+                        border-left: none;
+                        background-color: transparent;
+                    }
+                    border-left: none;
+                }
+            }
+            .form-control {
+                border-left: none;
+            }
+        }
+    }
+    .btn-reset-password {
+        &:hover {
+            text-decoration: underline;
+            color: $main-color;
+        }
+    }
+}
+
+.card-title {
+    text-align: center;
+}

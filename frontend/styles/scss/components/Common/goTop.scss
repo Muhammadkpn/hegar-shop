@@ -1,0 +1,28 @@
+@import "../../utils/variable";
+
+.go-top {
+    position: fixed;
+    cursor: pointer;
+    bottom: 0;
+    right: 15px;
+    color: $white-color;
+    background-color: $main-color;
+    z-index: 4;
+    width: 42px;
+    text-align: center;
+    height: 42px;
+    line-height: 45px;
+    font-size: 28px;
+    transition: $transition;
+    border-radius: 5px 5px 0 0;
+    visibility: hidden;
+
+    &.active {
+        visibility: visible;
+    }
+
+    &:hover {
+        background-color: $black-color;
+        color: $white-color;
+    }
+}
