@@ -1,53 +1,72 @@
-const database = require('../../database');
 const { asyncQuery } = require('../../helpers/queryHelper');
 
+/**
+ * User Wishlist Controller - Optimized
+ * Phase 1: Fixed SQL injection vulnerabilities
+ */
+
 module.exports = {
+    /**
+     * Get wishlist
+     * FIXED: SQL injection vulnerability
+     */
     getWishlist: async (req, res) => {
         const { id } = req.params;
         const { type } = req.query;
-        try {
-            // get data wishlist
-            let query = `SELECT uw.user_id, CONCAT('{"store_id":', p.store_id, ',"product_id":', p.id, ',"name": "', p.name,'","regular_price":', p.regular_price,',"sale_price":', p.sale_price, ', "weight":', p.weight, ',"image": "', pi.image, '"}') AS products FROM user_wishlist uw
-            JOIN products p ON uw.product_id = p.id
-            JOIN product_image pi ON uw.product_id = pi.product_id`;
-            // get data wishlist by user id
-            if (type === 'user-id') {
-                query += ` WHERE uw.user_id = ${database.escape(id)}`;
-            }
-            query += ' GROUP BY uw.user_id, uw.product_id;';
-            let result = await asyncQuery(query);
 
+        try {
+            let query = `
+                SELECT uw.user_id,
+                       CONCAT('{"store_id":', p.store_id,
+                              ',"product_id":', p.id,
+                              ',"name": "', p.name,
+                              '","regular_price":', p.regular_price,
+                              ',"sale_price":', p.sale_price,
+                              ',"weight":', p.weight,
+                              ',"image": "', pi.image,
+                              '"}') AS products
+                FROM user_wishlist uw
+                JOIN products p ON uw.product_id = p.id
+                JOIN product_image pi ON uw.product_id = pi.product_id
+            `;
+
+            const params = [];
+
+            // Filter by user id
+            if (type === 'user-id') {
+                query += ' WHERE uw.user_id = ?';
+                params.push(id);
+            }
+
+            query += ' GROUP BY uw.user_id, uw.product_id';
+
+            let result = await asyncQuery(query, params);
+
+            // Process results
             const finalResult = [];
             result.forEach((item) => {
-                let tempArr = '';
+                const product = JSON.parse(item.products);
 
-                // convert string to object
-                tempArr = JSON.parse(item.products);
+                // Check if user already exists in finalResult
+                const existingUser = finalResult.find((u) => u.user_id === item.user_id);
 
-                // check user_id in finalResult to avoid double user_id
-                const checkUserId = finalResult.filter((check) => check.user_id === item.user_id);
-                if (checkUserId.length === 0) {
-                    finalResult.push({ user_id: item.user_id, products: [] });
+                if (!existingUser) {
+                    finalResult.push({
+                        user_id: item.user_id,
+                        products: [product],
+                    });
+                } else {
+                    existingUser.products.push(product);
                 }
-
-                // store all wishlist of each users to array
-                finalResult.forEach((val) => {
-                    if (item.user_id === val.user_id) {
-                        val.products.push(tempArr);
-                    }
-                });
             });
-            // change result from query to finalResult that have manipulated
-            result = finalResult;
 
-            // send response
             res.status(200).send({
                 status: 'success',
-                message: 'Wishlist has been successfully processed',
-                data: type === 'user-id' ? result[0] : result,
+                message: 'Wishlist retrieved successfully',
+                data: type === 'user-id' ? finalResult[0] : finalResult,
             });
         } catch (error) {
-            console.log(error);
+            console.error('getWishlist error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
@@ -55,29 +74,37 @@ module.exports = {
             });
         }
     },
+
+    /**
+     * Update wishlist (toggle add/remove)
+     * FIXED: SQL injection vulnerabilities
+     */
     updateWishlist: async (req, res) => {
         const { productId, userId } = req.body;
-        try {
-            // check wishlist in database
-            const checkWishlist = `SELECT * FROM user_wishlist WHERE user_id = ${userId} AND product_id = ${productId}`;
-            const wishlist = await asyncQuery(checkWishlist);
 
-            // if product already in the wishlist, delete product from wishlist
+        try {
+            // Check if product is already in wishlist
+            const checkQuery = 'SELECT * FROM user_wishlist WHERE user_id = ? AND product_id = ?';
+            const wishlist = await asyncQuery(checkQuery, [userId, productId]);
+
             if (wishlist.length !== 0) {
-                const deleteWishlist = `DELETE FROM user_wishlist WHERE user_id = ${userId} AND product_id = ${productId}`;
-                await asyncQuery(deleteWishlist);
+                // Remove from wishlist
+                const deleteQuery = 'DELETE FROM user_wishlist WHERE user_id = ? AND product_id = ?';
+                await asyncQuery(deleteQuery, [userId, productId]);
             } else {
-                const addWishlist = `INSERT INTO user_wishlist (user_id, product_id) VALUES (${userId}, ${productId})`;
-                await asyncQuery(addWishlist);
+                // Add to wishlist
+                const addQuery = 'INSERT INTO user_wishlist (user_id, product_id) VALUES (?, ?)';
+                await asyncQuery(addQuery, [userId, productId]);
             }
 
-            // send response
             res.status(200).send({
                 status: 'success',
-                message: 'Your wishlist has been updated',
+                message: wishlist.length !== 0
+                    ? 'Product removed from wishlist'
+                    : 'Product added to wishlist',
             });
         } catch (error) {
-            console.log(error);
+            console.error('updateWishlist error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
@@ -85,32 +112,37 @@ module.exports = {
             });
         }
     },
+
+    /**
+     * Delete from wishlist
+     * FIXED: SQL injection vulnerabilities
+     */
     deleteWishlist: async (req, res) => {
         const { productId, userId } = req.params;
+
         try {
-            // check wishlist in database
-            const checkWishlist = `SELECT * FROM user_wishlist WHERE user_id = ${userId} AND product_id = ${productId}`;
-            const wishlist = await asyncQuery(checkWishlist);
+            // Check if exists
+            const checkQuery = 'SELECT * FROM user_wishlist WHERE user_id = ? AND product_id = ?';
+            const wishlist = await asyncQuery(checkQuery, [userId, productId]);
 
             if (wishlist.length === 0) {
-                res.status(200).send({
+                return res.status(404).send({
                     status: 'fail',
                     code: 404,
-                    message: 'Wishlist id doesn\'t exists',
+                    message: 'Item not found in wishlist',
                 });
             }
 
-            // delete wishlist
-            const deleteWishlist = `DELETE FROM user_wishlist WHERE user_id = ${userId} AND product_id = ${productId}`;
-            await asyncQuery(deleteWishlist);
+            // Delete from wishlist
+            const deleteQuery = 'DELETE FROM user_wishlist WHERE user_id = ? AND product_id = ?';
+            await asyncQuery(deleteQuery, [userId, productId]);
 
-            // send response
             res.status(200).send({
                 status: 'success',
-                message: 'Your wishlist has been deleted',
+                message: 'Item removed from wishlist',
             });
         } catch (error) {
-            console.log(error);
+            console.error('deleteWishlist error:', error);
             res.status(500).send({
                 status: 'fail',
                 code: 500,
