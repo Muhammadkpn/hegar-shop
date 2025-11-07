@@ -6,11 +6,7 @@ import { userKeepLogin, getCart, getWishlist, getCategoryChildProduct } from '..
 import { wrapper } from '../store/store';
 
 function MyApp({ Component, pageProps }) {
-    const { id } = useSelector((state) => {
-        return {
-            id: state.users.id,
-        };
-    });
+    const id = useSelector((state) => state.users.id);
     const dispatch = useDispatch();
     React.useEffect(() => {
         dispatch(userKeepLogin());
