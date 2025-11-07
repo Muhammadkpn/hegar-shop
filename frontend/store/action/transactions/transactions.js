@@ -41,7 +41,7 @@ export const uploadPayment = (order_number, data, user_id) => {
             dispatch({type: GET_ORDER, payload: res.data})
         } catch (error) {
             console.log(error.response ? error.response.data : error)
-            dispatch({ type: UPLOAD_PAYMENT_ERROR, payload: error.response.data })
+            dispatch({ type: UPLOAD_PAYMENT_ERROR, payload: error.response?.data || error })
         }
     }
 }

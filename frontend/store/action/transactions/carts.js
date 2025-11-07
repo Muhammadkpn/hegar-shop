@@ -32,7 +32,7 @@ export const editCart = (body, id) => {
             dispatch({ type: GET_CART, payload: cart.data });
         } catch (error) {
             console.log(error.response ? error.response.data : error);
-            dispatch({ type: ERROR_CART, payload: error.response.data });
+            dispatch({ type: ERROR_CART, payload: error.response?.data || error });
         }
     };
 };
@@ -46,7 +46,7 @@ export const addToCart = (body) => {
             dispatch({ type: GET_CART, payload: result.data });
         } catch (error) {
             console.log(error.response ? error.response.data : error);
-            dispatch({ type: ERROR_CART, payload: error.response.data });
+            dispatch({ type: ERROR_CART, payload: error.response?.data || error });
         }
     };
 };
