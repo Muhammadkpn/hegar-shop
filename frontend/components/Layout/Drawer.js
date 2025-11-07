@@ -21,23 +21,23 @@ const Drawer = ({ active, onClick }) => {
         return (
             <ul className='navbar-nav'>
                 <li className='nav-item'>
-                    <Link href='/shop'>
-                        <a className='nav-link'>Shop</a>
+                    <Link href='/shop' className='nav-link'>
+                        Shop
                     </Link>
                 </li>
                 <li className='nav-item'>
-                    <Link href='/store'>
-                        <a className='nav-link'>Store List</a>
+                    <Link href='/store' className='nav-link'>
+                        Store List
                     </Link>
                 </li>
                 <li className='nav-item'>
-                    <Link href='/blog'>
-                        <a className='nav-link'>Blog</a>
+                    <Link href='/blog' className='nav-link'>
+                        Blog
                     </Link>
                 </li>
                 <li className='nav-item'>
-                    <Link href='/contact'>
-                        <a className='nav-link'>Contact</a>
+                    <Link href='/contact' className='nav-link'>
+                        Contact
                     </Link>
                 </li>
             </ul>
@@ -59,7 +59,7 @@ const Drawer = ({ active, onClick }) => {
                                 className='nav-item d-flex justify-content-between py-3'
                             >
                                 <Link href={`/shop?category=${item.name}`}>
-                                    <a>{item.name}</a>
+                                    {item.name}
                                 </Link>
                                 {categoryChild?.child1?.filter((val) => item.id === val.parent_id)
                                     .length > 0 ? (
@@ -88,7 +88,7 @@ const Drawer = ({ active, onClick }) => {
                                                 aria-controls={`cat-child1-${value.id}`}
                                             >
                                                 <Link href={`/shop?category=${value.name}`}>
-                                                    <a>{value.name}</a>
+                                                    {value.name}
                                                 </Link>
                                                 {categoryChild?.child2?.filter(
                                                     (val) => value.id === val.parent_id
@@ -113,7 +113,7 @@ const Drawer = ({ active, onClick }) => {
                                                                 <Link
                                                                     href={`/shop?category=${val.name}`}
                                                                 >
-                                                                    <a>{val.name}</a>
+                                                                    {val.name}
                                                                 </Link>
                                                             </li>
                                                         </ul>
@@ -164,15 +164,13 @@ const Drawer = ({ active, onClick }) => {
                                         title='Wishlist'
                                         className='icon-btn-box'
                                     >
-                                        <Link href={user_id ? '/wishlist' : '/authentication'}>
-                                            <a className='icon-btn'>
-                                                <i className='icon-btn far fa-heart'></i>
-                                                <span>
-                                                    {wishlist?.products
-                                                        ? wishlist.products.length
-                                                        : 0}
-                                                </span>
-                                            </a>
+                                        <Link href={user_id ? '/wishlist' : '/authentication'} className='icon-btn'>
+                                            <i className='icon-btn far fa-heart'></i>
+                                            <span>
+                                                {wishlist?.products
+                                                    ? wishlist.products.length
+                                                    : 0}
+                                            </span>
                                         </Link>
                                     </div>
                                 </div>
@@ -193,10 +191,9 @@ const Drawer = ({ active, onClick }) => {
                                                     ? '/account'
                                                     : '/authentication'
                                             }
+                                            className='icon-btn'
                                         >
-                                            <a className='icon-btn'>
-                                                <i className='icon-btn far fa-user'></i>
-                                            </a>
+                                            <i className='icon-btn far fa-user'></i>
                                         </Link>
                                     </div>
                                 </div>
@@ -207,11 +204,9 @@ const Drawer = ({ active, onClick }) => {
                                         title='Cart'
                                         className='icon-btn-box'
                                     >
-                                        <Link href={user_id ? '/shop/cart' : '/authentication'}>
-                                            <a className='icon-btn'>
-                                                <i className='fas fa-shopping-cart'></i>
-                                                <span>{cart.total_qty || 0}</span>
-                                            </a>
+                                        <Link href={user_id ? '/shop/cart' : '/authentication'} className='icon-btn'>
+                                            <i className='fas fa-shopping-cart'></i>
+                                            <span>{cart.total_qty || 0}</span>
                                         </Link>
                                     </div>
                                 </div>

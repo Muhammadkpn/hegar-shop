@@ -62,7 +62,7 @@ export const uploadReview = (data, id) => {
             await Axios.post(URL + `/products/reviews/review-upload/${id}`, data, option)
         } catch (error) {
             console.log(error.response ? error.response.data : error)
-            dispatch({ type: ERROR_UPLOAD_REVIEW, payload: error.response.data })
+            dispatch({ type: ERROR_UPLOAD_REVIEW, payload: error.response?.data || error })
         }
     }
 }

@@ -17,7 +17,7 @@ class PageTitle extends Component {
                                     return (
                                         <li key={index}>
                                             <Link href={item.url}>
-                                                <a>{item.text}</a>
+                                                {item.text}
                                             </Link>
                                         </li>
                                     );

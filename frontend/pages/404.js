@@ -21,8 +21,8 @@ class NotFound extends Component {
                             <img src={"../image/error-404.png"} alt="error" />
                             <h3>Page Not Found</h3>
                             <p>The page you are looking for might have been removed had its name changed or is temporarily unavailable.</p>
-                            <Link href="/">
-                                <a className="default-btn">Go to Home</a>
+                            <Link href="/" className="default-btn">
+                                Go to Home
                             </Link>
                         </div>
                     </div>

@@ -223,11 +223,11 @@ const ResetPassword = ({ type }) => {
                 body={<p className='text-center'>Reset password has been succeeded</p>}
                 footer={
                     <React.Fragment>
-                        <Link href='/' data-dismiss='modal'>
-                            <a onClick={() => $('#alert-reset-password').modal('hide')}>HOME</a>
+                        <Link href='/' data-dismiss='modal' onClick={() => $('#alert-reset-password').modal('hide')}>
+                            HOME
                         </Link>
-                        <Link href='/authentication' data-dismiss='modal'>
-                            <a onClick={() => $('#alert-reset-password').modal('hide')}>LOGIN</a>
+                        <Link href='/authentication' data-dismiss='modal' onClick={() => $('#alert-reset-password').modal('hide')}>
+                            LOGIN
                         </Link>
                     </React.Fragment>
                 }

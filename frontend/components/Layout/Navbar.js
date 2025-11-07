@@ -48,10 +48,8 @@ class Navbar extends Component {
         return (
             <ul className='navbar-nav'>
                 <li className='nav-item'>
-                    <Link href='#'>
-                        <a className='nav-link'>
-                            Category <i className='fas fa-chevron-down'></i>
-                        </a>
+                    <Link href='#' className='nav-link'>
+                        Category <i className='fas fa-chevron-down'></i>
                     </Link>
 
                     <ul className='dropdown-menu'>
@@ -61,15 +59,14 @@ class Navbar extends Component {
                                     <Link
                                         href={`/shop?category=${item.name}`}
                                         activeClassName='active'
+                                        className='nav-link'
                                     >
-                                        <a className='nav-link'>
-                                            {item.name}
-                                            {categoryChild?.child1?.filter(
-                                                (val) => item.id === val.parent_id
-                                            ).length > 0 ? (
-                                                <i className='fas fa-chevron-right'></i>
-                                            ) : null}
-                                        </a>
+                                        {item.name}
+                                        {categoryChild?.child1?.filter(
+                                            (val) => item.id === val.parent_id
+                                        ).length > 0 ? (
+                                            <i className='fas fa-chevron-right'></i>
+                                        ) : null}
                                     </Link>
                                     <ul className='dropdown-menu'>
                                         {categoryChild?.child1?.map((value, idx) => {
@@ -79,16 +76,15 @@ class Navbar extends Component {
                                                         <Link
                                                             href={`/shop?category=${value.name}`}
                                                             activeClassName='active'
+                                                            className='nav-link'
                                                         >
-                                                            <a className='nav-link'>
-                                                                {value.name}
-                                                                {categoryChild?.child2?.filter(
-                                                                    (val) =>
-                                                                        value.id === val.parent_id
-                                                                ).length > 0 ? (
-                                                                    <i className='fas fa-chevron-right'></i>
-                                                                ) : null}
-                                                            </a>
+                                                            {value.name}
+                                                            {categoryChild?.child2?.filter(
+                                                                (val) =>
+                                                                    value.id === val.parent_id
+                                                            ).length > 0 ? (
+                                                                <i className='fas fa-chevron-right'></i>
+                                                            ) : null}
                                                         </Link>
                                                         <ul className='dropdown-menu'>
                                                             {categoryChild?.child2?.map(
@@ -104,10 +100,9 @@ class Navbar extends Component {
                                                                                 <Link
                                                                                     href={`/shop?category=${val.name}`}
                                                                                     activeClassName='active'
+                                                                                    className='nav-link'
                                                                                 >
-                                                                                    <a className='nav-link'>
-                                                                                        {val.name}
-                                                                                    </a>
+                                                                                    {val.name}
                                                                                 </Link>
                                                                             </li>
                                                                         );
@@ -126,23 +121,23 @@ class Navbar extends Component {
                     </ul>
                 </li>
                 <li className='nav-item'>
-                    <Link href='/shop'>
-                        <a className='nav-link'>Shop</a>
+                    <Link href='/shop' className='nav-link'>
+                        Shop
                     </Link>
                 </li>
                 <li className='nav-item'>
-                    <Link href='/store'>
-                        <a className='nav-link'>Store List</a>
+                    <Link href='/store' className='nav-link'>
+                        Store List
                     </Link>
                 </li>
                 <li className='nav-item'>
-                    <Link href='/blog'>
-                        <a className='nav-link'>Blog</a>
+                    <Link href='/blog' className='nav-link'>
+                        Blog
                     </Link>
                 </li>
                 <li className='nav-item'>
-                    <Link href='/contact'>
-                        <a className='nav-link'>Contact</a>
+                    <Link href='/contact' className='nav-link'>
+                        Contact
                     </Link>
                 </li>
             </ul>
@@ -173,11 +168,9 @@ class Navbar extends Component {
                         title='Wishlist'
                         className='icon-btn-box'
                     >
-                        <Link href='/wishlist'>
-                            <a className='icon-btn'>
-                                <i className='far fa-heart'></i>
-                                <span>{wishlist?.products ? wishlist.products.length : 0}</span>
-                            </a>
+                        <Link href='/wishlist' className='icon-btn'>
+                            <i className='far fa-heart'></i>
+                            <span>{wishlist?.products ? wishlist.products.length : 0}</span>
                         </Link>
                     </div>
                 </div>
@@ -206,10 +199,8 @@ class Navbar extends Component {
                                                         />
                                                     </div>
                                                     <div className='col-md-10'>
-                                                        <Link href={`/shop/${value.product_id}`}>
-                                                            <a className='p-0'>
-                                                                <h6>{value.name}</h6>
-                                                            </a>
+                                                        <Link href={`/shop/${value.product_id}`} className='p-0'>
+                                                            <h6>{value.name}</h6>
                                                         </Link>
                                                         <p>
                                                             <span>
@@ -228,12 +219,10 @@ class Navbar extends Component {
                                     </p>
                                     <div className='dropdown-divider'></div>
                                     <div>
-                                        <Link href='/shop/cart'>
-                                            <a className='px-0'>
-                                                <button type='button' className='btn btn-primary'>
-                                                    Go to cart
-                                                </button>
-                                            </a>
+                                        <Link href='/shop/cart' className='px-0'>
+                                            <button type='button' className='btn btn-primary'>
+                                                Go to cart
+                                            </button>
                                         </Link>
                                     </div>
                                 </div>
@@ -268,35 +257,25 @@ class Navbar extends Component {
                                         <h6 className='px-3 pt-2'>Super Admin Menu</h6>
                                         <div className='dropdown-divider'></div>
                                         <Link href='/super-admin?section=products'>
-                                            <a>
-                                                <i className='bx bxl-dropbox mr-2'></i>
-                                                Products
-                                            </a>
+                                            <i className='bx bxl-dropbox mr-2'></i>
+                                            Products
                                         </Link>
                                         <Link href='/super-admin?section=history-order'>
-                                            <a>
-                                                <i className='bx bx-shopping-bag mr-2'></i>
-                                                Transaction
-                                            </a>
+                                            <i className='bx bx-shopping-bag mr-2'></i>
+                                            Transaction
                                         </Link>
                                         <Link href='/super-admin?section=blog'>
-                                            <a>
-                                                <i className='bx bx-news mr-2'></i>
-                                                Blog
-                                            </a>
+                                            <i className='bx bx-news mr-2'></i>
+                                            Blog
                                         </Link>
                                         <Link href='/super-admin?section=users'>
-                                            <a>
-                                                <i className='bx bxs-id-card mr-2'></i>
-                                                Users
-                                            </a>
+                                            <i className='bx bxs-id-card mr-2'></i>
+                                            Users
                                         </Link>
                                         <div className='dropdown-divider'></div>
-                                        <Link href='/'>
-                                            <a onClick={() => this.handleLogout()}>
-                                                <i className='bx bx-log-out mr-2'></i>
-                                                Log Out
-                                            </a>
+                                        <Link href='/' onClick={() => this.handleLogout()}>
+                                            <i className='bx bx-log-out mr-2'></i>
+                                            Log Out
                                         </Link>
                                     </>
                                 ) : role === 2 ? (
@@ -304,90 +283,64 @@ class Navbar extends Component {
                                         <h6 className='px-3 pt-2'>Account</h6>
                                         <div className='dropdown-divider'></div>
                                         <Link href='/store/account?section=settings'>
-                                            <a>
-                                                <i className='bx bx-cog mr-2'></i>
-                                                Settings
-                                            </a>
+                                            <i className='bx bx-cog mr-2'></i>
+                                            Settings
                                         </Link>
                                         <Link href='/store/account?section=orders'>
-                                            <a>
-                                                <i className='bx bx-money mr-2'></i>
-                                                Purchases
-                                            </a>
+                                            <i className='bx bx-money mr-2'></i>
+                                            Purchases
                                         </Link>
                                         <div className='dropdown-divider'></div>
                                         <h6 className='px-3 pt-2'>Store Dashboard</h6>
                                         <div className='dropdown-divider'></div>
                                         <Link href='/store/account?section=sales'>
-                                            <a>
-                                                <i className='bx bx-dollar mr-2'></i>
-                                                Sales
-                                            </a>
+                                            <i className='bx bx-dollar mr-2'></i>
+                                            Sales
                                         </Link>
                                         <Link href='/store/account?section=products'>
-                                            <a>
-                                                <i className='bx bx-package mr-2'></i>
-                                                Products
-                                            </a>
+                                            <i className='bx bx-package mr-2'></i>
+                                            Products
                                         </Link>
                                         <Link href='/store/account?section=shipping'>
-                                            <a>
-                                                <i className='bx bxs-truck mr-2'></i>
-                                                Shipping
-                                            </a>
+                                            <i className='bx bxs-truck mr-2'></i>
+                                            Shipping
                                         </Link>
                                         <Link href='/store/account?section=withdraw'>
-                                            <a>
-                                                <i className='bx bx-refresh mr-2'></i>
-                                                Withdraw
-                                            </a>
+                                            <i className='bx bx-refresh mr-2'></i>
+                                            Withdraw
                                         </Link>
                                         <div className='dropdown-divider'></div>
-                                        <Link href='/'>
-                                            <a onClick={() => this.handleLogout()}>
-                                                <i className='bx bx-log-out mr-2'></i>
-                                                Log Out
-                                            </a>
+                                        <Link href='/' onClick={() => this.handleLogout()}>
+                                            <i className='bx bx-log-out mr-2'></i>
+                                            Log Out
                                         </Link>
                                     </>
                                 ) : (
                                     <>
                                         <Link href='/account?section=Dashboard'>
-                                            <a>
-                                                <i className='bx bx-home mr-2'></i>
-                                                Dashboard
-                                            </a>
+                                            <i className='bx bx-home mr-2'></i>
+                                            Dashboard
                                         </Link>
                                         <Link href='/account?section=Orders'>
-                                            <a>
-                                                <i className='bx bx-shopping-bag mr-2'></i>
-                                                Orders
-                                            </a>
+                                            <i className='bx bx-shopping-bag mr-2'></i>
+                                            Orders
                                         </Link>
                                         <Link href='/account?section=Download'>
-                                            <a>
-                                                <i className='bx bx-cloud-download mr-2'></i>
-                                                Download
-                                            </a>
+                                            <i className='bx bx-cloud-download mr-2'></i>
+                                            Download
                                         </Link>
                                         <Link href='/account?section=Addresses'>
-                                            <a>
-                                                <i className='bx bx-map mr-2'></i>
-                                                Addresses
-                                            </a>
+                                            <i className='bx bx-map mr-2'></i>
+                                            Addresses
                                         </Link>
                                         <Link href='/account?section=account-details'>
-                                            <a>
-                                                <i className='bx bx-user mr-2'></i>
-                                                Account Details
-                                            </a>
+                                            <i className='bx bx-user mr-2'></i>
+                                            Account Details
                                         </Link>
                                         <div className='dropdown-divider'></div>
-                                        <Link href='/'>
-                                            <a onClick={() => this.handleLogout()}>
-                                                <i className='bx bx-log-out mr-2'></i>
-                                                Log Out
-                                            </a>
+                                        <Link href='/' onClick={() => this.handleLogout()}>
+                                            <i className='bx bx-log-out mr-2'></i>
+                                            Log Out
                                         </Link>
                                     </>
                                 )}
@@ -400,10 +353,8 @@ class Navbar extends Component {
                             title={id ? 'account' : 'Authentication'}
                             className='icon-btn-box'
                         >
-                            <Link href='/authentication'>
-                                <a className='icon-btn '>
-                                    <i className='far fa-user'></i>
-                                </a>
+                            <Link href='/authentication' className='icon-btn '>
+                                <i className='far fa-user'></i>
                             </Link>
                         </div>
                     )}
@@ -429,13 +380,11 @@ class Navbar extends Component {
                         <div className='container'>
                             <nav className='navbar navbar-expand-md navbar-light'>
                                 <div className='img-container'>
-                                    <Link href='/'>
-                                        <a className='navbar-brand'>
-                                            <img
-                                                src={`${URL_IMG}/image/logo/logo-wisela.png`}
-                                                alt='logo-wisela'
-                                            />
-                                        </a>
+                                    <Link href='/' className='navbar-brand'>
+                                        <img
+                                            src={`${URL_IMG}/image/logo/logo-wisela.png`}
+                                            alt='logo-wisela'
+                                        />
                                     </Link>
                                 </div>
 
@@ -486,23 +435,21 @@ class Navbar extends Component {
                                             return (
                                                 <li key={index} className='search-group-item'>
                                                     <Link href={`/shop/${item.id}`}>
-                                                        <a>
-                                                            <div className='d-flex align-items-center'>
-                                                                <img
-                                                                    src={`${URL_IMG}/${item.image[0]}`}
-                                                                    className='search-img'
-                                                                />
-                                                                <div className='ml-2'>
-                                                                    <p className='mb-0'>
-                                                                        {item.name}
-                                                                    </p>
-                                                                    <p>
-                                                                        Rp.{' '}
-                                                                        {item.sale_price.toLocaleString()}
-                                                                    </p>
-                                                                </div>
+                                                        <div className='d-flex align-items-center'>
+                                                            <img
+                                                                src={`${URL_IMG}/${item.image[0]}`}
+                                                                className='search-img'
+                                                            />
+                                                            <div className='ml-2'>
+                                                                <p className='mb-0'>
+                                                                    {item.name}
+                                                                </p>
+                                                                <p>
+                                                                    Rp.{' '}
+                                                                    {item.sale_price.toLocaleString()}
+                                                                </p>
                                                             </div>
-                                                        </a>
+                                                        </div>
                                                     </Link>
                                                 </li>
                                             );

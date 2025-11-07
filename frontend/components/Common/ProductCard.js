@@ -179,9 +179,7 @@ const ProductCard = ({ data, user_id, wishlist, type, ...props }) => {
                     <strong> {category ? category[0] : ''}</strong>
                 </p>
                 <Link href={route ? `/` : `/shop/${id}`}>
-                    <a>
-                        <h6>{name}</h6>
-                    </a>
+                    <h6>{name}</h6>
                 </Link>
                 {sale_price !== regular_price ? (
                     <p className='price-card'>

@@ -45,11 +45,9 @@ const NewProducts = () => {
             </div>
             <div className='container d-flex justify-content-center'>
                 <Link href='/shop'>
-                    <a>
-                        <button type='button' className='btn btn-outline-primary mt-3'>
-                            View more products <i className='bx bx-chevron-right'></i>
-                        </button>
-                    </a>
+                    <button type='button' className='btn btn-outline-primary mt-3'>
+                        View more products <i className='bx bx-chevron-right'></i>
+                    </button>
                 </Link>
             </div>
         </div>

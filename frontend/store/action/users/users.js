@@ -44,7 +44,7 @@ export const userLogin = (body) => {
             dispatch({ type: LOG_IN_END })
         } catch (error) {
             console.log(error.response ? error.response.data : error);
-            dispatch({ type: LOG_IN_ERROR, payload: error.response.data });
+            dispatch({ type: LOG_IN_ERROR, payload: error.response?.data || error });
         }
     };
 };
@@ -69,7 +69,7 @@ export const userRegister = (body) => {
             dispatch({ type: REGISTER_END });
         } catch (error) {
             console.log(error.response ? error.response.data : error);
-            dispatch({ type: REGISTER_ERROR, payload: error.response.data });
+            dispatch({ type: REGISTER_ERROR, payload: error.response?.data || error });
         }
     };
 };
@@ -98,7 +98,7 @@ export const userKeepLogin = () => {
             dispatch({ type: LOG_IN, payload: resUser.data });
         } catch (error) {
             // auto log out when action get an error
-            if (error.response.data.message.message === 'jwt expired') {
+            if (error.response?.data?.message?.message === 'jwt expired') {
                 localStorage.removeItem('id');
                 localStorage.removeItem('token');
                 localStorage.removeItem('role_id');
@@ -138,7 +138,7 @@ export const sendEmailResetPassword = (body) => {
             dispatch({ type: ALERT_RESET_PASSWORD, payload: { message: '' } });
         } catch (error) {
             console.log(error.response ? error.response.data : error);
-            dispatch({ type: ALERT_RESET_PASSWORD, payload: error.response.data });
+            dispatch({ type: ALERT_RESET_PASSWORD, payload: error.response?.data || error });
         }
     }
 }
@@ -150,7 +150,7 @@ export const checkExpiredResetPassword = (body) => {
             dispatch({ type: RESET_PASSWORD, payload: result.data });
         } catch (error) {
             console.log(error.response ? error.response.data : error);
-            dispatch({ type: RESET_PASSWORD_ERROR, payload: error.response.data });
+            dispatch({ type: RESET_PASSWORD_ERROR, payload: error.response?.data || error });
         }
     }
 }
@@ -162,7 +162,7 @@ export const editResetPassword = (body) => {
             dispatch({ type: ALERT_RESET_PASSWORD, payload: { message: '' } });
         } catch (error) {
             console.log(error.response ? error.response.data : error);
-            dispatch({ type: ALERT_RESET_PASSWORD, payload: error.response.data });
+            dispatch({ type: ALERT_RESET_PASSWORD, payload: error.response?.data || error });
         }
     }
 }
@@ -223,7 +223,7 @@ export const editPassword = (body, id) => {
             dispatch({ type: GET_USER_ID, payload: result.data });
         } catch (error) {
             console.log(error.response ? error.response.data : error);
-            dispatch({ type: ALERT_PASSWORD, payload: error.response.data });
+            dispatch({ type: ALERT_PASSWORD, payload: error.response?.data || error });
         }
     };
 };

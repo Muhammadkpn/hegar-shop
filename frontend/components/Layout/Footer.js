@@ -22,52 +22,38 @@ const Footer = () => {
                         </p>
                         <ul className='social'>
                             <li>
-                                <Link href='#'>
-                                    <a target='_blank'>
-                                        <i className='bx bxl-facebook'></i>
-                                    </a>
+                                <Link href='#' target='_blank'>
+                                    <i className='bx bxl-facebook'></i>
                                 </Link>
                             </li>
                             <li>
-                                <Link href='#'>
-                                    <a target='_blank'>
-                                        <i className='bx bxl-twitter'></i>
-                                    </a>
+                                <Link href='#' target='_blank'>
+                                    <i className='bx bxl-twitter'></i>
                                 </Link>
                             </li>
                             <li>
-                                <Link href='#'>
-                                    <a href='#' target='_blank'>
-                                        <i className='bx bxl-instagram'></i>
-                                    </a>
+                                <Link href='#' target='_blank'>
+                                    <i className='bx bxl-instagram'></i>
                                 </Link>
                             </li>
                             <li>
-                                <Link href='#'>
-                                    <a target='_blank'>
-                                        <i className='bx bxl-linkedin'></i>
-                                    </a>
+                                <Link href='#' target='_blank'>
+                                    <i className='bx bxl-linkedin'></i>
                                 </Link>
                             </li>
                             <li>
-                                <Link href='#'>
-                                    <a target='_blank'>
-                                        <i className='bx bxl-skype'></i>
-                                    </a>
+                                <Link href='#' target='_blank'>
+                                    <i className='bx bxl-skype'></i>
                                 </Link>
                             </li>
                             <li>
-                                <Link href='#'>
-                                    <a target='_blank'>
-                                        <i className='bx bxl-pinterest-alt'></i>
-                                    </a>
+                                <Link href='#' target='_blank'>
+                                    <i className='bx bxl-pinterest-alt'></i>
                                 </Link>
                             </li>
                             <li>
-                                <Link href='#'>
-                                    <a target='_blank'>
-                                        <i className='bx bxl-youtube'></i>
-                                    </a>
+                                <Link href='#' target='_blank'>
+                                    <i className='bx bxl-youtube'></i>
                                 </Link>
                             </li>
                         </ul>
@@ -77,11 +63,9 @@ const Footer = () => {
                         {categoryChild?.parent?.map((item, index) => {
                             return (
                                 <Link href={`/shop?category=${item.name}`} key={index}>
-                                    <a>
-                                        <p className='footer-text ft-1' key={index}>
-                                            {item.name}
-                                        </p>
-                                    </a>
+                                    <p className='footer-text ft-1' key={index}>
+                                        {item.name}
+                                    </p>
                                 </Link>
                             );
                         })}
