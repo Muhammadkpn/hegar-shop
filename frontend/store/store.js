@@ -1,6 +1,6 @@
 import { createStore, applyMiddleware } from 'redux';
-import ReduxThunk from 'redux-thunk';
-import { composeWithDevTools } from 'redux-devtools-extension';
+import { thunk } from 'redux-thunk';
+import { composeWithDevTools } from '@redux-devtools/extension';
 import { createWrapper, HYDRATE } from 'next-redux-wrapper';
 
 import Rootreducer from './reducer';
@@ -27,14 +27,14 @@ const reducer = (state, action) => {
 
 const bindMiddleware = (middleware) => {
     if (process.env.NODE_ENV !== 'production') {
-        const { composeWithDevTools } = require('redux-devtools-extension');
+        const { composeWithDevTools } = require('@redux-devtools/extension');
         return composeWithDevTools(applyMiddleware(...middleware));
     }
     return applyMiddleware(...middleware);
 };
 
 export const initStore = () => {
-    return createStore(reducer, bindMiddleware([ReduxThunk]));
+    return createStore(reducer, bindMiddleware([thunk]));
 };
 
 export const wrapper = createWrapper(initStore);

@@ -50,18 +50,27 @@ export const getStaticProps = wrapper.getStaticProps(async ({ store, params }) =
 });
 
 export async function getStaticPaths() {
-    const blog = await axios.get(`${URL}/blog`);
-    const paths = blog.data.data.map((item) => {
+    try {
+        const blog = await axios.get(`${URL}/blog`);
+        const paths = blog.data.data.map((item) => {
+            return {
+                params: {
+                    id: `${item.id}`,
+                },
+            };
+        });
         return {
-            params: {
-                id: `${item.id}`,
-            },
+            paths,
+            fallback: 'blocking',
         };
-    });
-    return {
-        paths,
-        fallback: false,
-    };
+    } catch (error) {
+        // If backend is not available during build, return empty paths
+        // Pages will be generated on-demand
+        return {
+            paths: [],
+            fallback: 'blocking',
+        };
+    }
 }
 
 export default BlogDetailsPage;

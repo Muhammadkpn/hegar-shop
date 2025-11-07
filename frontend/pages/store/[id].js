@@ -33,18 +33,27 @@ export const getStaticProps = wrapper.getStaticProps(async ({ store, params }) =
 });
 
 export async function getStaticPaths() {
-    const store = await Axios.get(`${URL}/users?type=store`);
-    const paths = store.data.data.map((item) => {
+    try {
+        const store = await Axios.get(`${URL}/users?type=store`);
+        const paths = store.data.data.map((item) => {
+            return {
+                params: {
+                    id: `${item.id}`,
+                },
+            };
+        });
         return {
-            params: {
-                id: `${item.id}`,
-            },
+            paths,
+            fallback: 'blocking',
         };
-    });
-    return {
-        paths,
-        fallback: false,
-    };
+    } catch (error) {
+        // If backend is not available during build, return empty paths
+        // Pages will be generated on-demand
+        return {
+            paths: [],
+            fallback: 'blocking',
+        };
+    }
 }
 
 export default StoreDetailsPage;
