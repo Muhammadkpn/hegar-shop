@@ -57,23 +57,21 @@ const BlogSidebar = () => {
                 {popular.map((item, index) => {
                     return (
                         <article key={index} className='item'>
-                            <Link href={`/blog/${item.id}`}>
-                                <a className='thumb'>
-                                    <span
-                                        className='fullimage cover'
-                                        role='img'
-                                        style={{
-                                            backgroundImage: `url(${URL_IMG}/${item.image})`,
-                                        }}
-                                    ></span>
-                                </a>
+                            <Link href={`/blog/${item.id}`} className='thumb'>
+                                <span
+                                    className='fullimage cover'
+                                    role='img'
+                                    style={{
+                                        backgroundImage: `url(${URL_IMG}/${item.image})`,
+                                    }}
+                                ></span>
                             </Link>
 
                             <div className='info'>
                                 <span>{item.date}</span>
                                 <h4 className='title usmall'>
                                     <Link href={`/blog/${item.id}`}>
-                                        <a>{item.title}</a>
+                                        {item.title}
                                     </Link>
                                 </h4>
                             </div>
@@ -91,26 +89,25 @@ const BlogSidebar = () => {
                     {countCategory.map((item, index) => {
                         return (
                             <li key={index}>
-                                <Link href={`/blog?category=${item.category}${search ? `&search=${search}` : ''}${tag ? `&tag=${tag}` : ''}`}>
-                                    <a 
+                                <Link
+                                    href={`/blog?category=${item.category}${search ? `&search=${search}` : ''}${tag ? `&tag=${tag}` : ''}`}
+                                    style={
+                                            category === item.category ?
+                                            { backgroundColor: '#172C93', color: '#fff', }
+                                            : {}
+                                    }
+                                >
+                                    {item.category}{' '}
+                                    <span
+                                        className='post-count'
                                         style={
-                                                category === item.category ? 
-                                                { backgroundColor: '#172C93', color: '#fff', }
+                                                category === item.category ?
+                                                { color: '#fff', }
                                                 : {}
                                         }
                                     >
-                                        {item.category}{' '}
-                                        <span
-                                            className='post-count'                                                     
-                                            style={
-                                                    category === item.category ? 
-                                                    { color: '#fff', }
-                                                    : {}
-                                            }
-                                        >
-                                            ({item.count})
-                                        </span>
-                                    </a>
+                                        ({item.count})
+                                    </span>
                                 </Link>
                             </li>
                         );
@@ -124,26 +121,26 @@ const BlogSidebar = () => {
                 <div className='tagcloud'>
                     {countTagBlog.map((item, index) => {
                         return (
-                            <Link key={index} href={`/blog?${search ? `search=${search}` : ''}${category ? `&category=${category}` : ''}&tag=${item.tags}`}>
-                                <a
+                            <Link
+                                key={index}
+                                href={`/blog?${search ? `search=${search}` : ''}${category ? `&category=${category}` : ''}&tag=${item.tags}`}
+                                style={
+                                    tag === item.tags ?
+                                    { backgroundColor: '#172C93', color: '#fff', }
+                                    : {}
+                                }
+                            >
+                                {item.tags}{' '}
+                                <span
+                                    className='tag-link-count'
                                     style={
-                                        tag === item.tags ? 
-                                        { backgroundColor: '#172C93', color: '#fff', }
-                                        : {}
+                                            tag === item.tags ?
+                                            { color: '#fff', }
+                                            : {}
                                     }
                                 >
-                                    {item.tags}{' '}
-                                    <span 
-                                        className='tag-link-count'                                             
-                                        style={
-                                                tag === item.tags ? 
-                                                { color: '#fff', }
-                                                : {}
-                                        }
-                                    >
-                                        ({item.count})
-                                    </span>
-                                </a>
+                                    ({item.count})
+                                </span>
                             </Link>
                         );
                     })}
@@ -155,45 +152,33 @@ const BlogSidebar = () => {
 
                 <ul>
                     <li>
-                        <Link href='#'>
-                            <a className='d-block'>
-                                <img src={`${URL_IMG}/image/blog/blog1.jpg`} alt='image' />
-                            </a>
+                        <Link href='#' className='d-block'>
+                            <img src={`${URL_IMG}/image/blog/blog1.jpg`} alt='image' />
                         </Link>
                     </li>
                     <li>
-                        <Link href='#'>
-                            <a className='d-block'>
-                                <img src={`${URL_IMG}/image/blog/blog2.jpg`} alt='image' />
-                            </a>
+                        <Link href='#' className='d-block'>
+                            <img src={`${URL_IMG}/image/blog/blog2.jpg`} alt='image' />
                         </Link>
                     </li>
                     <li>
-                        <Link href='#'>
-                            <a className='d-block'>
-                                <img src={`${URL_IMG}/image/blog/blog3.jpg`} alt='image' />
-                            </a>
+                        <Link href='#' className='d-block'>
+                            <img src={`${URL_IMG}/image/blog/blog3.jpg`} alt='image' />
                         </Link>
                     </li>
                     <li>
-                        <Link href='#'>
-                            <a className='d-block'>
-                                <img src={`${URL_IMG}/image/blog/blog4.jpg`} alt='image' />
-                            </a>
+                        <Link href='#' className='d-block'>
+                            <img src={`${URL_IMG}/image/blog/blog4.jpg`} alt='image' />
                         </Link>
                     </li>
                     <li>
-                        <Link href='#'>
-                            <a className='d-block'>
-                                <img src={`${URL_IMG}/image/blog/blog5.jpg`} alt='image' />
-                            </a>
+                        <Link href='#' className='d-block'>
+                            <img src={`${URL_IMG}/image/blog/blog5.jpg`} alt='image' />
                         </Link>
                     </li>
                     <li>
-                        <Link href='#'>
-                            <a className='d-block'>
-                                <img src={`${URL_IMG}/image/blog/blog6.jpg`} alt='image' />
-                            </a>
+                        <Link href='#' className='d-block'>
+                            <img src={`${URL_IMG}/image/blog/blog6.jpg`} alt='image' />
                         </Link>
                     </li>
                 </ul>

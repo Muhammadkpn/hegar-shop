@@ -90,18 +90,16 @@ const MainBanner = () => {
                                 return (
                                     <li key={index} className='search-group-item'>
                                         <Link href={`/shop/${item.id}`}>
-                                            <a>
-                                                <div className='d-flex align-items-center'>
-                                                    <img
-                                                        src={`${URL_IMG}/${item.image[0]}`}
-                                                        className='search-img'
-                                                    />
-                                                    <div className='ml-2'>
-                                                        <p className='mb-0'>{item.name}</p>
-                                                        <p>Rp. {item.sale_price.toLocaleString()}</p>
-                                                    </div>
+                                            <div className='d-flex align-items-center'>
+                                                <img
+                                                    src={`${URL_IMG}/${item.image[0]}`}
+                                                    className='search-img'
+                                                />
+                                                <div className='ml-2'>
+                                                    <p className='mb-0'>{item.name}</p>
+                                                    <p>Rp. {item.sale_price.toLocaleString()}</p>
                                                 </div>
-                                            </a>
+                                            </div>
                                         </Link>
                                     </li>
                                 );

@@ -386,11 +386,9 @@ const StoreSettings = () => {
                         </button>
                     </div>
                 )}
-                { role === 2 ? 
-                <Link href='/account'>
-                    <a className='btn btn-primary'>
-                        Go to Account Page
-                    </a>
+                { role === 2 ?
+                <Link href='/account' className='btn btn-primary'>
+                    Go to Account Page
                 </Link>
                 : null}
             </form>

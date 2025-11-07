@@ -28,8 +28,8 @@ const EmailVerification = () => {
                             Congratulation! You've already confirm your account. Enjoy your shopping
                             on wisela!
                         </p>
-                        <Link href='/authentication'>
-                            <a className='btn btn-primary'>Login</a>
+                        <Link href='/authentication' className='btn btn-primary'>
+                            Login
                         </Link>
                     </React.Fragment>
                 ) : (
@@ -38,8 +38,8 @@ const EmailVerification = () => {
                             The link is invalid. It may have been used or have expired. Please
                             ensure that the link matches the one emailed to you.
                         </p>
-                        <Link href='/'>
-                            <a className='btn btn-primary'>Back to Home</a>
+                        <Link href='/' className='btn btn-primary'>
+                            Back to Home
                         </Link>
                     </React.Fragment>
                 )}

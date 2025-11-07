@@ -19,8 +19,8 @@ const StoreCard = (props) => {
                     </div>
                 </div>
                 <div className="card-footer">
-                    <Link href={`/store/${id}`}>
-                        <a className="btn btn-outline-primary">Visit store<i className='bx bx-chevron-right'></i></a>
+                    <Link href={`/store/${id}`} className="btn btn-outline-primary">
+                        Visit store<i className='bx bx-chevron-right'></i>
                     </Link>
                     <img src={`${URL_IMG}/${image}`} className="img-store"/>
                 </div>

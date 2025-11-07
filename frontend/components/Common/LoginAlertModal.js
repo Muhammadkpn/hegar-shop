@@ -10,15 +10,13 @@ const LoginAlertModal = ({ modal_id }) => {
             footer={
                 <div>
                     <Link href='/authentication'>
-                        <a>
-                            <button
-                                type='button'
-                                className='btn btn-outline-primary btn-sm mr-2'
-                                onClick={() => $(`#${modal_id}`).modal('hide')}
-                            >
-                                Login
-                            </button>
-                        </a>
+                        <button
+                            type='button'
+                            className='btn btn-outline-primary btn-sm mr-2'
+                            onClick={() => $(`#${modal_id}`).modal('hide')}
+                        >
+                            Login
+                        </button>
                     </Link>
                     <button
                         type='button'

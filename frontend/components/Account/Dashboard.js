@@ -22,40 +22,32 @@ const Dashboard = () => {
                 <div className='my-3 row justify-content-between'>
                     <div>
                         <Link href='/account?section=orders'>
-                            <a>
-                                <button type='button' className='btn btn-primary mx-2 mb-2'>
-                                    View Orders
-                                </button>
-                            </a>
+                            <button type='button' className='btn btn-primary mx-2 mb-2'>
+                                View Orders
+                            </button>
                         </Link>
                     </div>
                     <div>
                         <Link href='/account?section=addresses'>
-                            <a>
-                                <button type='button' className='btn btn-primary mx-2 mb-2'>
-                                    Manage Addresses
-                                </button>
-                            </a>
+                            <button type='button' className='btn btn-primary mx-2 mb-2'>
+                                Manage Addresses
+                            </button>
                         </Link>
                     </div>
                     <div>
                         <Link href='/account?section=account-details'>
-                            <a>
-                                <button type='button' className='btn btn-primary mx-2 mb-2'>
-                                    Edit Account Details
-                                </button>
-                            </a>
+                            <button type='button' className='btn btn-primary mx-2 mb-2'>
+                                Edit Account Details
+                            </button>
                         </Link>
                     </div>
                 </div>
             </div>
             {role === 2 ? (
                 <Link href='/store/account'>
-                    <a>
-                        <button type='button' className='btn btn-primary m-3'>
-                            Go to Vendor Dashboard
-                        </button>
-                    </a>
+                    <button type='button' className='btn btn-primary m-3'>
+                        Go to Vendor Dashboard
+                    </button>
                 </Link>
             ) : null}
             {role === 3 ? (

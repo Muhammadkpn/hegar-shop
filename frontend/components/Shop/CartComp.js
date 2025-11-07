@@ -75,7 +75,7 @@ class CartComp extends Component {
                                                                     <Link
                                                                         href={`/shop/${value.product_id}`}
                                                                     >
-                                                                        <a>{value.name}</a>
+                                                                        {value.name}
                                                                     </Link>
                                                                 </td>
 
@@ -158,10 +158,8 @@ class CartComp extends Component {
                                     <div className='cart-buttons'>
                                         <div className='row align-items-center'>
                                             <div className='col-lg-6 col-md-6'>
-                                                <Link href='/shop'>
-                                                    <a className='optional-btn'>
-                                                        Continue Shopping
-                                                    </a>
+                                                <Link href='/shop' className='optional-btn'>
+                                                    Continue Shopping
                                                 </Link>
                                             </div>
 
@@ -205,17 +203,15 @@ class CartComp extends Component {
                                                     </ul>
 
                                                     <Link href='/shop/checkout'>
-                                                        <a>
-                                                            <button
-                                                                type='button'
-                                                                className='default-btn btn-block'
-                                                                disabled={
-                                                                    cart.length === 0 ? true : false
-                                                                }
-                                                            >
-                                                                Proceed to Checkout
-                                                            </button>
-                                                        </a>
+                                                        <button
+                                                            type='button'
+                                                            className='default-btn btn-block'
+                                                            disabled={
+                                                                cart.length === 0 ? true : false
+                                                            }
+                                                        >
+                                                            Proceed to Checkout
+                                                        </button>
                                                     </Link>
                                                 </div>
                                             </div>

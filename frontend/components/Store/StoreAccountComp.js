@@ -100,104 +100,87 @@ const StoreAccountComp = () => {
                             <div className={`collapse ${btnCollapse ? 'd-none' : 'd-block'}`} id='store-menu-collapse'>
                                 <h6 className='title-sidebar p-3'>Account</h6>
                                 <Link href='/store/account?section=settings'>
-                                    <a>
-                                        <p
-                                            className='subtitle-sidebar p-3'
-                                            style={
-                                                `${section}`.toLowerCase() === 'settings'
-                                                    ? { color: '#172C93', fontWeight: 'bold' }
-                                                    : {}
-                                            }
-                                        >
-                                            <i className='bx bx-cog mr-2'></i>Settings
-                                        </p>
-                                    </a>
+                                    <p
+                                        className='subtitle-sidebar p-3'
+                                        style={
+                                            `${section}`.toLowerCase() === 'settings'
+                                                ? { color: '#172C93', fontWeight: 'bold' }
+                                                : {}
+                                        }
+                                    >
+                                        <i className='bx bx-cog mr-2'></i>Settings
+                                    </p>
                                 </Link>
                                 <div className='dropdown-divider'></div>
                                 <Link href='/store/account?section=orders'>
-                                    <a>
-                                        <p
-                                            className='subtitle-sidebar p-3'
-                                            style={
-                                                `${section}`.toLowerCase() === 'orders'
-                                                    ? { color: '#172C93', fontWeight: 'bold' }
-                                                    : {}
-                                            }
-                                        >
-                                            <i className='bx bx-money mr-2'></i>Orders
-                                        </p>
-                                    </a>
+                                    <p
+                                        className='subtitle-sidebar p-3'
+                                        style={
+                                            `${section}`.toLowerCase() === 'orders'
+                                                ? { color: '#172C93', fontWeight: 'bold' }
+                                                : {}
+                                        }
+                                    >
+                                        <i className='bx bx-money mr-2'></i>Orders
+                                    </p>
                                 </Link>
                                 <h6 className='title-sidebar p-3'>Store Dashboard</h6>
                                 <Link href='/store/account?section=sales'>
-                                    <a>
-                                        <p
-                                            className='subtitle-sidebar p-3'
-                                            style={
-                                                `${section}`.toLowerCase() === 'sales'
-                                                    ? { color: '#172C93', fontWeight: 'bold' }
-                                                    : {}
-                                            }
-                                        >
-                                            <i className='bx bx-dollar mr-2'></i>Sales
-                                        </p>
-                                    </a>
+                                    <p
+                                        className='subtitle-sidebar p-3'
+                                        style={
+                                            `${section}`.toLowerCase() === 'sales'
+                                                ? { color: '#172C93', fontWeight: 'bold' }
+                                                : {}
+                                        }
+                                    >
+                                        <i className='bx bx-dollar mr-2'></i>Sales
+                                    </p>
                                 </Link>
                                 <div className='dropdown-divider'></div>
                                 <Link href='/store/account?section=products'>
-                                    <a>
-                                        <p
-                                            className='subtitle-sidebar p-3'
-                                            style={
-                                                `${section}`.toLowerCase() === 'products'
-                                                    ? { color: '#172C93', fontWeight: 'bold' }
-                                                    : {}
-                                            }
-                                        >
-                                            <i className='bx bx-package mr-2'></i>Products
-                                        </p>
-                                    </a>
+                                    <p
+                                        className='subtitle-sidebar p-3'
+                                        style={
+                                            `${section}`.toLowerCase() === 'products'
+                                                ? { color: '#172C93', fontWeight: 'bold' }
+                                                : {}
+                                        }
+                                    >
+                                        <i className='bx bx-package mr-2'></i>Products
+                                    </p>
                                 </Link>
                                 <div className='dropdown-divider'></div>
                                 <Link href='/store/account?section=shipping'>
-                                    <a>
-                                        <p
-                                            className='subtitle-sidebar p-3'
-                                            style={
-                                                `${section}`.toLowerCase() === 'shipping'
-                                                    ? { color: '#172C93', fontWeight: 'bold' }
-                                                    : {}
-                                            }
-                                        >
-                                            <i className='bx bxs-truck mr-2'></i>Shipping
-                                        </p>
-                                    </a>
+                                    <p
+                                        className='subtitle-sidebar p-3'
+                                        style={
+                                            `${section}`.toLowerCase() === 'shipping'
+                                                ? { color: '#172C93', fontWeight: 'bold' }
+                                                : {}
+                                        }
+                                    >
+                                        <i className='bx bxs-truck mr-2'></i>Shipping
+                                    </p>
                                 </Link>
                                 <div className='dropdown-divider'></div>
                                 <Link href='/store/account?section=withdraw'>
-                                    <a>
-                                        <p
-                                            className='subtitle-sidebar p-3'
-                                            style={
-                                                `${section}`.toLowerCase() === 'withdraw'
-                                                    ? { color: '#172C93', fontWeight: 'bold' }
-                                                    : {}
-                                            }
-                                        >
-                                            <i className='bx bx-refresh mr-2'></i>Withdraw
-                                        </p>
-                                    </a>
+                                    <p
+                                        className='subtitle-sidebar p-3'
+                                        style={
+                                            `${section}`.toLowerCase() === 'withdraw'
+                                                ? { color: '#172C93', fontWeight: 'bold' }
+                                                : {}
+                                        }
+                                    >
+                                        <i className='bx bx-refresh mr-2'></i>Withdraw
+                                    </p>
                                 </Link>
                                 <div className='dropdown-divider'></div>
-                                <Link href='/'>
-                                    <a>
-                                        <p
-                                            className='subtitle-sidebar p-3'
-                                            onClick={() => handleLogout()}
-                                        >
-                                            <i className='bx bx-log-out mr-2'></i>Sign out
-                                        </p>
-                                    </a>
+                                <Link href='/' onClick={() => handleLogout()}>
+                                    <p className='subtitle-sidebar p-3'>
+                                        <i className='bx bx-log-out mr-2'></i>Sign out
+                                    </p>
                                 </Link>
                             </div>
                         </div>

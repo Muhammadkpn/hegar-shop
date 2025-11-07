@@ -131,25 +131,23 @@ const SuperAdminComp = () => {
                                                     <Link
                                                         href={`/super-admin?section=${value.section}`}
                                                     >
-                                                        <a>
-                                                            <p
-                                                                className='subtitle-sidebar p-3'
-                                                                style={
-                                                                    `${section}`.toLowerCase() ===
-                                                                    value.section
-                                                                        ? {
-                                                                              color: '#172C93',
-                                                                              fontWeight: 'bold',
-                                                                          }
-                                                                        : {}
-                                                                }
-                                                            >
-                                                                <i
-                                                                    className={`bx ${value.icon} mr-2`}
-                                                                ></i>
-                                                                {value.name}
-                                                            </p>
-                                                        </a>
+                                                        <p
+                                                            className='subtitle-sidebar p-3'
+                                                            style={
+                                                                `${section}`.toLowerCase() ===
+                                                                value.section
+                                                                    ? {
+                                                                          color: '#172C93',
+                                                                          fontWeight: 'bold',
+                                                                      }
+                                                                    : {}
+                                                            }
+                                                        >
+                                                            <i
+                                                                className={`bx ${value.icon} mr-2`}
+                                                            ></i>
+                                                            {value.name}
+                                                        </p>
                                                     </Link>
                                                     {idx === item.subtitle.length - 1 ? null : (
                                                         <div className='dropdown-divider'></div>

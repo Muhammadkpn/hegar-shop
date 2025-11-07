@@ -50,16 +50,12 @@ const WishlistComp = () => {
                                     </td>
                                     <td className='align-middle'>
                                         <Link href={`/shop/${item.product_id}`}>
-                                            <a>
-                                                <img src={`${URL_IMG}/${item.image[0]}`} className='img' />
-                                            </a>
+                                            <img src={`${URL_IMG}/${item.image[0]}`} className='img' />
                                         </Link>
                                     </td>
                                     <td className='align-middle'>
                                         <Link href={`/shop/${item.product_id}`}>
-                                            <a>
-                                                {item.name}
-                                            </a>
+                                            {item.name}
                                         </Link>
                                     </td>
                                     <td className='align-middle'>
