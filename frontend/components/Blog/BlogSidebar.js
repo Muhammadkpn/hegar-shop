@@ -7,7 +7,7 @@ import {
 } from '../../store/action';
 import React from 'react';
 import Link from 'next/link';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import { useRouter } from 'next/router';
 
 const BlogSidebar = () => {
@@ -62,7 +62,7 @@ const BlogSidebar = () => {
                                     className='fullimage cover'
                                     role='img'
                                     style={{
-                                        backgroundImage: `url(${URL_IMG}/${item.image})`,
+                                        backgroundImage: `url(${getFullImageUrl(item.image)})`,
                                     }}
                                 ></span>
                             </Link>
@@ -153,32 +153,32 @@ const BlogSidebar = () => {
                 <ul>
                     <li>
                         <Link href='#' className='d-block'>
-                            <img src={`${URL_IMG}/image/blog/blog1.jpg`} alt='image' />
+                            <img src={getFullImageUrl('/image/blog/blog1.jpg')} alt='image' />
                         </Link>
                     </li>
                     <li>
                         <Link href='#' className='d-block'>
-                            <img src={`${URL_IMG}/image/blog/blog2.jpg`} alt='image' />
+                            <img src={getFullImageUrl('/image/blog/blog2.jpg')} alt='image' />
                         </Link>
                     </li>
                     <li>
                         <Link href='#' className='d-block'>
-                            <img src={`${URL_IMG}/image/blog/blog3.jpg`} alt='image' />
+                            <img src={getFullImageUrl('/image/blog/blog3.jpg')} alt='image' />
                         </Link>
                     </li>
                     <li>
                         <Link href='#' className='d-block'>
-                            <img src={`${URL_IMG}/image/blog/blog4.jpg`} alt='image' />
+                            <img src={getFullImageUrl('/image/blog/blog4.jpg')} alt='image' />
                         </Link>
                     </li>
                     <li>
                         <Link href='#' className='d-block'>
-                            <img src={`${URL_IMG}/image/blog/blog5.jpg`} alt='image' />
+                            <img src={getFullImageUrl('/image/blog/blog5.jpg')} alt='image' />
                         </Link>
                     </li>
                     <li>
                         <Link href='#' className='d-block'>
-                            <img src={`${URL_IMG}/image/blog/blog6.jpg`} alt='image' />
+                            <img src={getFullImageUrl('/image/blog/blog6.jpg')} alt='image' />
                         </Link>
                     </li>
                 </ul>

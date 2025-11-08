@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { getSalesSummary, getWishlist, userLogout, getCart } from '../../store/action';
@@ -54,7 +54,7 @@ const StoreAccountComp = () => {
                         <div className='row'>
                             <div className='col-12 col-md-2'>
                                 <img
-                                    src={`${URL_IMG}/${salesSummary?.image ? salesSummary.image : 'image/users/avatar.jpg'}`}
+                                    src={getFullImageUrl(salesSummary?.image ? salesSummary.image : 'image/users/avatar.jpg')}
                                     alt='store-profile-img'
                                     className='store-img img-circle border bg-light'
                                 />

@@ -20,7 +20,7 @@ import {
     getProductDetails,
     editProductReview,
 } from '../../store/action';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 
 const StoreProducts = () => {
     const [detailMode, setDetailMode] = React.useState(null);
@@ -243,9 +243,9 @@ const StoreProducts = () => {
                                 <img
                                     src={
                                         data[selectedIndex ? selectedIndex : 0].id
-                                            ? `${URL_IMG}/${
+                                            ? getFullImageUrl(
                                                   data[selectedIndex ? selectedIndex : 0].image
-                                              }`
+                                              )
                                             : data[selectedIndex ? selectedIndex : 0].id
                                     }
                                     className='img-edit-product'
@@ -327,7 +327,7 @@ const StoreProducts = () => {
                                                     <img
                                                         src={
                                                             item.id
-                                                                ? `${URL_IMG}/${item.image}`
+                                                                ? getFullImageUrl(item.image)
                                                                 : item.image
                                                         }
                                                         className='img-edit-product'
@@ -1008,7 +1008,7 @@ const StoreProducts = () => {
                                                 {(item.image || []).map((value, idx) => {
                                                     return (
                                                         <img
-                                                            src={`${URL_IMG}/${value}`}
+                                                            src={getFullImageUrl(value)}
                                                             className='img-review'
                                                             key={idx}
                                                         />
@@ -1100,7 +1100,7 @@ const StoreProducts = () => {
                                     <tr key={index}>
                                         <td className='align-middle'>
                                             <img
-                                                src={`${URL_IMG}/${item.image[0]}`}
+                                                src={getFullImageUrl(item.image[0])}
                                                 className='img-store-products'
                                             />
                                         </td>

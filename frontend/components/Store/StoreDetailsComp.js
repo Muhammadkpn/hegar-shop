@@ -10,7 +10,7 @@ import {
 } from '../../store/action';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 
 const StoreDetailsComp = () => {
     const [pages, setPages] = React.useState(1);
@@ -57,7 +57,7 @@ const StoreDetailsComp = () => {
                     <div className='col-10 col-md-6 row'>
                         <div className='col-md-2'>
                             <img
-                                src={`${URL_IMG}/${salesSummary.image || 'image/users/avatar.jpg'}`}
+                                src={getFullImageUrl(salesSummary.image || 'image/users/avatar.jpg')}
                                 alt='store-profile-img'
                                 className='store-img img-circle border rounded-circle'
                             />

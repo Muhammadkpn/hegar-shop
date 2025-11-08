@@ -7,7 +7,7 @@ import Orders from './Orders';
 import Download from './Download';
 import Addresses from './Addresses';
 import AccountDetails from './AccountDetails';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 
 const AccountComp = ({ section, username, email }) => {
     const dispatch = useDispatch();
@@ -48,7 +48,7 @@ const AccountComp = ({ section, username, email }) => {
                             <div className='row no-gutters'>
                                 <div className='col-lg-4'>
                                     <img
-                                        src={`${URL_IMG}/${image || 'image/users/avatar.jpg'}`}
+                                        src={getFullImageUrl(image || 'image/users/avatar.jpg')}
                                         className='img-circle img-profile'
                                     />
                                 </div>

@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { getWishlist, deleteWishlist, addToCart } from '../../store/action';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import React from 'react';
 import CartAlertModal from '../Common/CartAlertModal';
@@ -50,7 +50,7 @@ const WishlistComp = () => {
                                     </td>
                                     <td className='align-middle'>
                                         <Link href={`/shop/${item.product_id}`}>
-                                            <img src={`${URL_IMG}/${item.image[0]}`} className='img' />
+                                            <img src={getFullImageUrl(item.image[0])} className='img' />
                                         </Link>
                                     </td>
                                     <td className='align-middle'>

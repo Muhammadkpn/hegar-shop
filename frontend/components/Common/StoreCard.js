@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import React from 'react'
-import {URL_IMG} from '../../store/helpers'
+import {getFullImageUrl} from '../../store/helpers'
 
 const StoreCard = (props) => {
     const {id, full_name, status_store_id, city, province, phone, image} = props.data
@@ -22,7 +22,7 @@ const StoreCard = (props) => {
                     <Link href={`/store/${id}`} className="btn btn-outline-primary">
                         Visit store<i className='bx bx-chevron-right'></i>
                     </Link>
-                    <img src={`${URL_IMG}/${image}`} className="img-store"/>
+                    <img src={getFullImageUrl(image)} className="img-store"/>
                 </div>
             </div>
         </div>

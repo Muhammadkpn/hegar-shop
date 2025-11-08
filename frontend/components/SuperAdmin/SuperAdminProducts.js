@@ -7,7 +7,7 @@ import {
     editProduct,
     editProductReview,
 } from '../../store/action';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import ModalComp from '../Common/modalComp';
 
 const SuperAdminProducts = () => {
@@ -197,7 +197,7 @@ const SuperAdminProducts = () => {
                                             key={index}
                                         >
                                             <img
-                                                src={`${URL_IMG}/${item}`}
+                                                src={getFullImageUrl(item)}
                                                 className='img-product-detail'
                                                 alt='img-product'
                                             />
@@ -432,7 +432,7 @@ const SuperAdminProducts = () => {
                                                 {(item.image || []).map((value, idx) => {
                                                     return (
                                                         <img
-                                                            src={`${URL_IMG}/${value}`}
+                                                            src={getFullImageUrl(value)}
                                                             className='img-review'
                                                             key={idx}
                                                         />
@@ -563,7 +563,7 @@ const SuperAdminProducts = () => {
                                     <tr key={index}>
                                         <td className='align-middle'>
                                             <img
-                                                src={`${URL_IMG}/${item.image[0]}`}
+                                                src={getFullImageUrl(item.image[0])}
                                                 className='img-product-admin'
                                             />
                                         </td>
