@@ -1,195 +1,139 @@
-const database = require('../../database');
-const { asyncQuery } = require('../../helpers/queryHelper');
+const { BlogCategoryService } = require('../../services/blog');
+
+const blogCategoryService = new BlogCategoryService();
+
+/**
+ * Blog Category Controller - Clean Architecture
+ * Manages blog-category relationship CRUD operations
+ */
 
 module.exports = {
-    getBlogCategory: async (req, res) => {
-        try {
-            // get all blog category
-            const blogCategory = `SELECT bc.blog_id, b.title AS title_blog, bc.category_id, cb.name AS category FROM blog_category bc
-            JOIN blog b ON bc.blog_id = b.id
-            JOIN category_blog cb ON bc.category_id = cb.id`;
-            const result = await asyncQuery(blogCategory);
+  /**
+   * Get all blog-category relationships
+   */
+  getBlogCategory: async (req, res) => {
+    try {
+      const blogCategories = await blogCategoryService.getBlogCategories();
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully',
-                data: result,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    countCategory: async (req, res) => {
-        try {
-            // count category
-            const countCategory = `SELECT bc.category_id, cb.name AS category, COUNT(bc.category_id) AS count FROM blog_category bc
-                            JOIN category_blog cb ON bc.category_id = cb.id GROUP BY bc.category_id, cb.name ORDER BY count DESC;`;
-            const result = await asyncQuery(countCategory);
+      res.status(200).send({
+        status: 'success',
+        message: 'Your request has been successfully',
+        data: blogCategories,
+      });
+    } catch (error) {
+      console.error('getBlogCategory error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully',
-                data: result,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    addBlogCategory: async (req, res) => {
-        const { categoryId } = req.body;
+  /**
+   * Count blogs per category
+   */
+  countCategory: async (req, res) => {
+    try {
+      const categoryCount = await blogCategoryService.getCategoryCount();
 
-        try {
-            // Get blog id
-            const blogId = 'SELECT MAX(id) AS AUTO_INCREMENT FROM blog;';
-            const getBlogId = await asyncQuery(blogId);
+      res.status(200).send({
+        status: 'success',
+        message: 'Your request has been successfully',
+        data: categoryCount,
+      });
+    } catch (error) {
+      console.error('countCategory error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
 
-            // check duplicate in CategoryId
-            const checkDuplicate = [...new Set(categoryId)];
-            if (checkDuplicate.length !== categoryId.length) {
-                res.status(403).send({
-                    status: 'fail',
-                    code: 403,
-                    message: 'Your input has duplicate',
-                });
-                return;
-            }
+  /**
+   * Add categories to latest blog
+   */
+  addBlogCategory: async (req, res) => {
+    const { categoryId } = req.body;
 
-            let value = '';
-            categoryId.forEach((item) => {
-                value += `(${database.escape(getBlogId[0].AUTO_INCREMENT)}, ${database.escape(item)}),`;
-            });
-            // insert new article
-            const addBlogCategory = `INSERT INTO blog_category (blog_id, category_id) VALUES ${value.slice(0, -1)}`;
-            await asyncQuery(addBlogCategory);
+    try {
+      await blogCategoryService.addBlogCategories(categoryId);
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Blog category has been added to the database',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    editBlogCategory: async (req, res) => {
-        const { categoryId } = req.body;
-        const { id } = req.params;
+      res.status(200).send({
+        status: 'success',
+        message: 'Blog category has been added to the database',
+      });
+    } catch (error) {
+      console.error('addBlogCategory error:', error);
+      const statusCode = error.message === 'Your input has duplicate' ? 403 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message,
+      });
+    }
+  },
 
-        try {
-            // check availability of blog category
-            const check = `SELECT * FROM blog_category WHERE id = ${database.escape(id)}`;
-            const getCheck = await asyncQuery(check);
+  /**
+   * Update blog categories
+   */
+  editBlogCategory: async (req, res) => {
+    const { categoryId } = req.body;
+    const { id } = req.params;
 
-            if (getCheck.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: `Blog category with id ${id} doesn't exists`,
-                });
-                return;
-            }
+    try {
+      await blogCategoryService.updateBlogCategories(id, categoryId);
 
-            // check duplicate categoryId
-            const checkDuplicate = [...new Set(categoryId)];
-            if (checkDuplicate.length !== categoryId.length) {
-                res.status(403).send({
-                    status: 'fail',
-                    code: 404,
-                    message: 'Your input has duplicate value',
-                });
-                return;
-            }
+      res.status(200).send({
+        status: 'success',
+        message: `Blog category with ${id} has been edited`,
+      });
+    } catch (error) {
+      console.error('editBlogCategory error:', error);
+      let statusCode = 500;
+      if (error.message === 'Blog category not found') {
+        statusCode = 404;
+      } else if (error.message === 'Your input has duplicate value') {
+        statusCode = 403;
+      } else if (error.message.includes('doesn\'t exists in our database')) {
+        statusCode = 404;
+      }
 
-            // check categoryId in tags
-            const checkCategoryId = `SELECT * FROM category_blog WHERE id IN (${[...categoryId]})`;
-            const getCheckCategoryId = await asyncQuery(checkCategoryId);
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message === 'Blog category not found'
+          ? `Blog category with id ${id} doesn't exists`
+          : error.message,
+      });
+    }
+  },
 
-            if (getCheckCategoryId.length !== categoryId.length) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: 'One of the tag id doesn\'t exists in our database',
-                });
-                return;
-            }
+  /**
+   * Delete blog-category relationship
+   */
+  deletBlogCategory: async (req, res) => {
+    const { id } = req.params;
 
-            // delete blog category
-            const deleteBlogTag = `DELETE FROM blog_category WHERE blog_id = ${database.escape(id)}`;
-            await asyncQuery(deleteBlogTag);
+    try {
+      await blogCategoryService.deleteBlogCategory(id);
 
-            // add blog category
-            let value = '';
-            categoryId.map((item) => {
-                value += `(${database.escape(id)}, ${database.escape(item)}),`;
-                return value;
-            });
-            const editBlogCategory = `INSERT blog_category (blog_id, category_id) VALUES ${value.slice(0, -1)}`;
-            await asyncQuery(editBlogCategory);
-
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: `Blog category with ${id} has been edited`,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    deletBlogCategory: async (req, res) => {
-        const { id } = req.params;
-
-        try {
-            // check availability of blog category
-            const check = `SELECT * FROM blog_category WHERE id = ${database.escape(id)}`;
-            const getCheck = await asyncQuery(check);
-
-            if (getCheck.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: `Blog category with id ${id} doesn't exists`,
-                });
-                return;
-            }
-
-            // delete article category
-            const delArticleCategory = `DELETE FROM blog_category WHERE id = ${database.escape(id)}`;
-            await asyncQuery(delArticleCategory);
-
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: `Blog Category with id: ${id} has been deleted`,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
+      res.status(200).send({
+        status: 'success',
+        message: `Blog Category with id: ${id} has been deleted`,
+      });
+    } catch (error) {
+      console.error('deletBlogCategory error:', error);
+      const statusCode = error.message === 'Blog category not found' ? 404 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message === 'Blog category not found'
+          ? `Blog category with id ${id} doesn't exists`
+          : error.message,
+      });
+    }
+  },
 };

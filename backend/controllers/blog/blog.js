@@ -1,508 +1,402 @@
-const database = require('../../database');
-const { asyncQuery, today, getImageUrl } = require('../../helpers/queryHelper');
+const { getImageUrl, today } = require('../../helpers/queryHelper');
+const { BlogService } = require('../../services/blog');
+
+const blogService = new BlogService();
+
+/**
+ * Blog Controller - Clean Architecture
+ * Request → Router → Validator → Controller → Service → Repository → Database
+ *
+ * Controller responsibilities:
+ * - Handle HTTP request/response
+ * - Parse query parameters
+ * - Format response
+ * - Error handling
+ */
 
 module.exports = {
-    getBlog: async (req, res) => {
-        const {
-            search, categories, tags, _sort, _order,
-        } = req.query;
+  /**
+   * Get public blogs with filters
+   */
+  getBlog: async (req, res) => {
+    const {
+      search, categories, tags, _sort, _order,
+    } = req.query;
 
-        try {
-            // get article with tag and category blog
-            let getArticle = `SELECT b.*, uk.full_name AS author_name, tb_2.category AS category, tb_1.tags FROM blog b
-                LEFT JOIN user_ktp uk ON b.author_id = uk.user_id
-                LEFT JOIN ( SELECT bt.blog_id, GROUP_CONCAT(bt.tag_id) AS tag_id, GROUP_CONCAT(t.name) AS tags FROM blog_tag bt
-                    JOIN tag_blog t ON bt.tag_id = t.id
-                    GROUP BY bt.blog_id
-                ) tb_1 ON b.id = tb_1.blog_id
-                LEFT JOIN ( SELECT bc.blog_id, GROUP_CONCAT(bc.category_id) AS category_id, GROUP_CONCAT(cb.name) AS category FROM blog_category bc
-                    JOIN category_blog cb ON bc.category_id = cb.id
-                    GROUP BY bc.blog_id
-                ) tb_2 ON b.id = tb_2.blog_id
-                WHERE b.status = 1 `;
+    try {
+      // Validate sort field
+      const allowedSortFields = ['id', 'title', 'date', 'view', 'author_name'];
+      const sortField = allowedSortFields.includes(_sort) ? `b.${_sort}` : 'b.date';
+      const sortOrder = _order && _order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-            // type of query
-            const checkSearch = Object.prototype.hasOwnProperty.call(req.query, 'search');
-            const checkCategory = Object.prototype.hasOwnProperty.call(req.query, 'categories');
-            const checkTag = Object.prototype.hasOwnProperty.call(req.query, 'tags');
-            if (checkSearch && checkCategory && checkTag) {
-                getArticle += ` AND b.title LIKE ${database.escape(`%${search}%`)} AND tb_2.category LIKE ${database.escape(`%${categories}%`)} AND tb_1.tags LIKE ${database.escape(`%${tags}%`)}`;
-            } else if (checkSearch && checkCategory) {
-                getArticle += ` AND b.title LIKE ${database.escape(`%${search}%`)} AND tb_2.category LIKE ${database.escape(`%${categories}%`)}`;
-            } else if (checkSearch && checkTag) {
-                getArticle += ` AND b.title LIKE ${database.escape(`%${search}%`)} AND tb_1.tags LIKE ${database.escape(`%${tags}%`)}`;
-            } else if (checkTag && checkCategory) {
-                getArticle += ` AND tb_2.category LIKE ${database.escape(`%${categories}%`)} AND tb_1.tags LIKE ${database.escape(`%${tags}%`)}`;
-            } else if (checkSearch) {
-                getArticle += ` AND b.title LIKE ${database.escape(`%${search}%`)}`;
-            } else if (checkCategory) {
-                getArticle += ` AND tb_2.category LIKE ${database.escape(`%${categories}%`)}`;
-            } else if (checkTag) {
-                getArticle += ` AND tb_1.tags LIKE ${database.escape(`%${tags}%`)}`;
-            }
+      // Call service
+      const blogs = await blogService.getBlogs({
+        search,
+        categories,
+        tags,
+        sortField,
+        sortOrder,
+        status: 1, // Only published blogs
+      });
 
-            // check sort query - validate sort field to prevent SQL injection
-            let sort = '';
-            if (_sort) {
-                const allowedSortFields = ['id', 'title', 'date', 'view', 'author_name'];
-                const sortField = allowedSortFields.includes(_sort) ? _sort : 'b.date';
-                const sortOrder = _order && _order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-                sort += ` ORDER BY ${sortField} ${sortOrder}`;
-            }
-
-            getArticle += ` ${sort.length === 0 ? 'ORDER BY b.date DESC' : sort}`;
-            const result = await asyncQuery(getArticle);
-
-            // convert data from string to array and convert image to full URL
-            let tempCategory = [];
-            let tempTags = [];
-            result.forEach((item, index) => {
-                if (item.category && item.tags) {
-                    tempCategory = item.category.split(',');
-                    tempTags = item.tags.split(',');
-
-                    result[index].category = tempCategory;
-                    result[index].tags = tempTags;
-                }
-                // Convert blog image to full URL
-                if (item.image) {
-                    result[index].image = getImageUrl(item.image, req);
-                }
-            });
-
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully',
-                data: result,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
+      // Convert images to full URLs
+      blogs.forEach((blog, index) => {
+        if (blog.image) {
+          blogs[index].image = getImageUrl(blog.image, req);
         }
-    },
-    getAdminBlog: async (req, res) => {
-        const {
-            titles, _sort, _order, status,
-        } = req.query;
+      });
 
-        try {
-            // get article with tag and category blog
-            let getArticle = `SELECT b.*, uk.full_name AS author_name, tb_2.category AS category, tb_1.tags FROM blog b
-                LEFT JOIN user_ktp uk ON b.author_id = uk.user_id
-                JOIN ( SELECT bt.blog_id, GROUP_CONCAT(bt.tag_id) AS tag_id, GROUP_CONCAT(t.name) AS tags FROM blog_tag bt
-                    JOIN tag_blog t ON bt.tag_id = t.id
-                    GROUP BY bt.blog_id
-                ) tb_1 ON b.id = tb_1.blog_id
-                JOIN ( SELECT bc.blog_id, GROUP_CONCAT(bc.category_id) AS category_id, GROUP_CONCAT(cb.name) AS category FROM blog_category bc
-                    JOIN category_blog cb ON bc.category_id = cb.id
-                    GROUP BY bc.blog_id
-                ) tb_2 ON b.id = tb_2.blog_id`;
+      res.status(200).send({
+        status: 'success',
+        message: 'Your request has been successfully',
+        data: blogs,
+      });
+    } catch (error) {
+      console.error('getBlog error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
 
-            // type of query
-            const checkQuery = (key) => Object.prototype.hasOwnProperty.call(req.query, key);
-            if (checkQuery('titles') && checkQuery('status')) {
-                getArticle += ` WHERE b.title LIKE ${database.escape(`%${titles}%`)} ${status !== 'All' ? `AND b.status = ${database.escape(status)}` : ''}`;
-            } else if (checkQuery('titles')) {
-                getArticle += ` WHERE b.title LIKE ${database.escape(`%${titles}%`)}`;
-            } else if (checkQuery('status') && status !== 'All') {
-                getArticle += ` WHERE b.status = ${database.escape(status)}`;
-            }
+  /**
+   * Get blogs for admin (all statuses)
+   */
+  getAdminBlog: async (req, res) => {
+    const {
+      titles, _sort, _order, status,
+    } = req.query;
 
-            // check sort query - validate sort field to prevent SQL injection
-            let sort = '';
-            if (_sort) {
-                const allowedSortFields = ['id', 'title', 'date', 'view', 'status', 'author_name'];
-                const sortField = allowedSortFields.includes(_sort) ? _sort : 'b.date';
-                const sortOrder = _order && _order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-                sort += ` ORDER BY ${sortField} ${sortOrder}`;
-            }
+    try {
+      // Validate sort field
+      const allowedSortFields = ['id', 'title', 'date', 'view', 'status', 'author_name'];
+      const sortField = allowedSortFields.includes(_sort) ? `b.${_sort}` : 'b.date';
+      const sortOrder = _order && _order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-            getArticle += ` ${sort.length === 0 ? 'ORDER BY b.date DESC' : sort}`;
-            const result = await asyncQuery(getArticle);
+      // Determine status filter
+      let statusFilter;
+      if (status && status !== 'All') {
+        statusFilter = parseInt(status, 10);
+      }
 
-            // convert data from string to array and convert image to full URL
-            let tempCategory = [];
-            let tempTags = [];
-            result.forEach((item, index) => {
-                tempCategory = item.category.split(',');
-                tempTags = item.tags.split(',');
+      // Call service
+      const blogs = await blogService.getBlogs({
+        search: titles,
+        sortField,
+        sortOrder,
+        status: statusFilter,
+      });
 
-                result[index].category = tempCategory;
-                result[index].tags = tempTags;
-
-                // Convert blog image to full URL
-                if (item.image) {
-                    result[index].image = getImageUrl(item.image, req);
-                }
-            });
-
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully',
-                data: result,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
+      // Convert images to full URLs
+      blogs.forEach((blog, index) => {
+        if (blog.image) {
+          blogs[index].image = getImageUrl(blog.image, req);
         }
-    },
-    getDetailsBlog: async (req, res) => {
-        const { id } = req.params;
+      });
 
-        try {
-            // get article with tag an}d category blog
-            const getArticle = `SELECT b.*, uk.full_name AS author_name, tb_2.category AS category, tb_1.tags FROM blog b
-                LEFT JOIN user_ktp uk ON b.author_id = uk.user_id
-                LEFT JOIN ( SELECT bt.blog_id, GROUP_CONCAT(bt.tag_id) AS tag_id, GROUP_CONCAT(t.name) AS tags FROM blog_tag bt
-                    JOIN tag_blog t ON bt.tag_id = t.id
-                    GROUP BY bt.blog_id
-                ) tb_1 ON b.id = tb_1.blog_id
-                LEFT JOIN ( SELECT bc.blog_id, GROUP_CONCAT(bc.category_id) AS category_id, GROUP_CONCAT(cb.name) AS category FROM blog_category bc 
-                    JOIN category_blog cb ON bc.category_id = cb.id
-                    GROUP BY bc.blog_id
-                ) tb_2 ON b.id = tb_2.blog_id
-                WHERE b.id = ${database.escape(id)} AND b.status = 1`;
+      res.status(200).send({
+        status: 'success',
+        message: 'Your request has been successfully',
+        data: blogs,
+      });
+    } catch (error) {
+      console.error('getAdminBlog error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
 
-            const result = await asyncQuery(getArticle);
+  /**
+   * Get blog details by ID
+   */
+  getDetailsBlog: async (req, res) => {
+    const { id } = req.params;
 
-            // convert data from string to array and convert image to full URL
-            let category = [];
-            let tags = [];
+    try {
+      const blog = await blogService.getBlogById(id, false);
 
-            result.forEach((item, index) => {
-                if (item.category && item.tags) {
-                    category = item.category.split(',');
-                    tags = item.tags.split(',');
-                    result[index].category = category;
-                    result[index].tags = tags;
-                }
-                // Convert blog image to full URL
-                if (item.image) {
-                    result[index].image = getImageUrl(item.image, req);
-                }
-            });
+      // Check if blog is published
+      if (blog.status !== 1) {
+        return res.status(404).send({
+          status: 'fail',
+          code: 404,
+          message: 'Your article not found',
+        });
+      }
 
-            // check result
-            if (result.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: 'Your article not found',
-                });
-                return;
-            }
+      // Convert image to full URL
+      if (blog.image) {
+        blog.image = getImageUrl(blog.image, req);
+      }
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully',
-                data: result[0],
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
+      res.status(200).send({
+        status: 'success',
+        message: 'Your request has been successfully',
+        data: blog,
+      });
+    } catch (error) {
+      console.error('getDetailsBlog error:', error);
+      const statusCode = error.message === 'Blog not found' ? 404 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message === 'Blog not found' ? 'Your article not found' : error.message,
+      });
+    }
+  },
+
+  /**
+   * Get other/related blogs (prev and next)
+   */
+  getOthersBlog: async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      // Get all blogs sorted by date
+      const allBlogs = await blogService.getBlogs({
+        sortField: 'b.date',
+        sortOrder: 'DESC',
+      });
+
+      // Find index of current blog
+      const currentIndex = allBlogs.findIndex((blog) => blog.id === parseInt(id, 10));
+
+      if (currentIndex === -1) {
+        return res.status(404).send({
+          status: 'fail',
+          code: 404,
+          message: 'Your other articles not found',
+        });
+      }
+
+      // Get previous and next blogs
+      const relatedBlogs = [];
+
+      if (currentIndex > 0) {
+        relatedBlogs.push(allBlogs[currentIndex - 1]);
+      }
+      if (currentIndex < allBlogs.length - 1) {
+        relatedBlogs.push(allBlogs[currentIndex + 1]);
+      }
+
+      if (relatedBlogs.length === 0) {
+        return res.status(404).send({
+          status: 'fail',
+          code: 404,
+          message: 'Your other articles not found',
+        });
+      }
+
+      res.status(200).send({
+        status: 'success',
+        message: 'Your request has been successfully',
+        data: relatedBlogs,
+      });
+    } catch (error) {
+      console.error('getOthersBlog error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
+
+  /**
+   * Get popular blogs (top 4 by view count)
+   */
+  getPopularBlog: async (req, res) => {
+    try {
+      // Get published blogs sorted by view count
+      const blogs = await blogService.getBlogs({
+        sortField: 'b.view',
+        sortOrder: 'DESC',
+        status: 1,
+      });
+
+      // Take top 4
+      const popularBlogs = blogs.slice(0, 4);
+
+      // Convert images to full URLs
+      popularBlogs.forEach((blog, index) => {
+        if (blog.image) {
+          popularBlogs[index].image = getImageUrl(blog.image, req);
         }
-    },
-    getOthersBlog: async (req, res) => {
-        const { id } = req.params;
-        try {
-            // sort blog by date
-            const query = 'SELECT * FROM blog ORDER BY date DESC;';
-            const result = await asyncQuery(query);
+      });
 
-            // get index of article
-            let idx;
-            result.map((item, index) => {
-                if (item.id === parseInt(id, 10)) {
-                    idx = index;
-                }
-                return idx;
-            });
+      res.status(200).send({
+        status: 'success',
+        message: 'Your request has been successfully',
+        data: popularBlogs,
+      });
+    } catch (error) {
+      console.error('getPopularBlog error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
 
-            // filter article by index to get others article
-            let result2;
-            if (idx === 0) {
-                result2 = result.filter((item, index) => index === idx + 1 || index === idx);
-            } else if (idx === result.length - 1) {
-                result2 = result.filter((item, index) => index === idx || index === idx - 1);
-            } else {
-                result2 = result.filter((item, index) => index < idx + 2 && index >= idx - 1);
-            }
+  /**
+   * Increment blog view count
+   */
+  countView: async (req, res) => {
+    const { id } = req.params;
 
-            // delete article itself to get next and prev article in array
-            if (result2.length === 3) {
-                result2.splice(1, 1);
-            } else if (result2.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: 'Your other articles not found',
-                });
-                return;
-            }
+    try {
+      const blog = await blogService.getBlogById(id, true);
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully',
-                data: result2,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    getPopularBlog: async (req, res) => {
-        try {
-            // get top four popular article by view
-            const query = 'SELECT * FROM blog WHERE status = 1 ORDER BY view DESC LIMIT 4';
-            const result = await asyncQuery(query);
+      res.status(200).send({
+        status: 'success',
+        message: 'The number of view has been added',
+        data: {
+          id: blog.id,
+          title: blog.title,
+          view: blog.view,
+        },
+      });
+    } catch (error) {
+      console.error('countView error:', error);
+      const statusCode = error.message === 'Blog not found' ? 404 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message === 'Blog not found' ? 'Article not found' : error.message,
+      });
+    }
+  },
 
-            // Convert blog images to full URLs
-            result.forEach((item, index) => {
-                if (item.image) {
-                    result[index].image = getImageUrl(item.image, req);
-                }
-            });
+  /**
+   * Add new blog
+   */
+  addBlog: async (req, res) => {
+    const { title, content, authorId } = req.body;
 
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully',
-                data: result,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    countView: async (req, res) => {
-        const { id } = req.params;
-        try {
-            const blog = `SELECT id, title, view FROM blog WHERE id = ${database.escape(id)}`;
-            const getBlog = await asyncQuery(blog);
+    // Validate file upload
+    if (!req.file) {
+      return res.status(400).send({
+        status: 'fail',
+        code: 400,
+        message: 'no image',
+      });
+    }
 
-            if (getBlog.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: 'Article not found',
-                });
-                return;
-            }
+    try {
+      const imagePath = `image/blog/${req.file.filename}`;
 
-            // insert count
-            const newCount = parseInt(getBlog[0].view, 10) + 1;
-            const countView = `UPDATE blog SET view = ${newCount} WHERE id = ${database.escape(id)}`;
-            await asyncQuery(countView);
+      await blogService.createBlog({
+        title,
+        content,
+        image: imagePath,
+        authorId,
+        status: 1,
+        categoryIds: [], // Can be added later via blogCategory endpoint
+        tagIds: [],
+      });
 
-            res.status(200).send({
-                status: 'success',
-                message: 'The number of view has been added',
-                data: {
-                    id, tittle: getBlog[0].tittle, view: newCount,
-                },
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    addBlog: async (req, res) => {
-        const { title, content, authorId } = req.body;
+      res.status(200).send({
+        status: 'success',
+        message: 'Your new article has been added to database',
+      });
+    } catch (error) {
+      console.error('addBlog error:', error);
+      const statusCode = error.message.includes('already') ? 403 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message,
+      });
+    }
+  },
 
-        // check file upload
-        if (req.file === undefined) {
-            res.status(400).send({
-                status: 'fail',
-                code: 400,
-                message: 'no image',
-            });
-            return;
-        }
+  /**
+   * Edit blog content
+   */
+  editBlog: async (req, res) => {
+    const { id } = req.params;
+    const { title, content } = req.body;
 
-        try {
-            const checkTitle = `SELECT * FROM blog WHERE title = ${database.escape(title)}`;
-            const getCheckTitle = await asyncQuery(checkTitle);
+    try {
+      await blogService.updateBlog(id, { title, content });
 
-            if (getCheckTitle.length > 0) {
-                res.status(403).send({
-                    status: 'fail',
-                    code: 403,
-                    message: 'title have already used. Change the title of blog to add new article',
-                });
-                return;
-            }
-            // insert new article
-            const addPost = `INSERT INTO blog (title, date, view, content, image, status, author_id) 
-                        VALUES (${database.escape(title)}, ${database.escape(today)}, 0, ${database.escape(content)}, 
-                        'image/blog/${req.file.filename}', 1, ${database.escape(authorId)})`;
-            await asyncQuery(addPost);
+      res.status(200).send({
+        status: 'success',
+        message: `Article with id: ${id} has been edited`,
+      });
+    } catch (error) {
+      console.error('editBlog error:', error);
+      const statusCode = error.message === 'Blog not found' ? 404 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message === 'Blog not found' ? `Article with id = ${id} doesn't exists` : error.message,
+      });
+    }
+  },
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your new article has been added to database',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    editBlog: async (req, res) => {
-        const { title, content } = req.body;
-        const { id } = req.params;
+  /**
+   * Edit blog image
+   */
+  editBlogImage: async (req, res) => {
+    const { id } = req.params;
 
-        try {
-            // check article
-            const article = `SELECT * FROM blog WHERE id = ${database.escape(id)}`;
-            const checkArticle = await asyncQuery(article);
+    // Validate file upload
+    if (!req.file) {
+      return res.status(400).send({
+        status: 'fail',
+        code: 400,
+        message: 'no image',
+      });
+    }
 
-            if (checkArticle.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: `Article with id = ${id} doesn't exists`,
-                });
-                return;
-            }
+    try {
+      const imagePath = `image/blog/${req.file.filename}`;
 
-            // edit article data
-            const editArticle = `UPDATE blog SET title = ${database.escape(title)}, content = ${database.escape(content)} WHERE id = ${database.escape(id)}`;
-            await asyncQuery(editArticle);
+      await blogService.updateBlog(id, { image: imagePath });
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: `Article with id: ${id} has been edited`,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    editBlogImage: async (req, res) => {
-        const { id } = req.params;
+      res.status(200).send({
+        status: 'success',
+        message: `Image of article with id: ${id} has been edited`,
+      });
+    } catch (error) {
+      console.error('editBlogImage error:', error);
+      const statusCode = error.message === 'Blog not found' ? 404 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message === 'Blog not found' ? `Article with id = ${id} doesn't exists` : error.message,
+      });
+    }
+  },
 
-        try {
-            // check file upload
-            if (req.file === undefined) {
-                res.status(400).send({
-                    status: 'fail',
-                    code: 400,
-                    message: 'no image',
-                });
-                return;
-            }
+  /**
+   * Delete blog
+   */
+  deleteBlog: async (req, res) => {
+    const { id } = req.params;
 
-            // check article
-            const article = `SELECT * FROM blog WHERE id = ${database.escape(id)}`;
-            const checkArticle = await asyncQuery(article);
+    try {
+      await blogService.deleteBlog(id);
 
-            if (checkArticle.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: `Article with id = ${id} doesn't exists`,
-                });
-                return;
-            }
-
-            // edit article data
-            const editArticle = `UPDATE blog SET ${req.file ? `image = ${database.escape(`/image/blog/${req.file.filename}`)}` : ''} WHERE id = ${database.escape(id)}`;
-            await asyncQuery(editArticle);
-
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: `Image of article with id: ${id} has been edited`,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    deleteBlog: async (req, res) => {
-        const { id } = req.params;
-        try {
-            // check article
-            const article = `SELECT * FROM blog WHERE id = ${database.escape(id)}`;
-            const checkArticle = await asyncQuery(article);
-
-            if (checkArticle.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: `Article with id = ${id} doesn't exists`,
-                });
-                return;
-            }
-
-            // delete article
-            const delPost = `DELETE FROM blog WHERE id = ${database.escape(id)}`;
-            await asyncQuery(delPost);
-
-            // delete article category
-            const delArticleCategory = `DELETE FROM blog_category WHERE blog_id = ${database.escape(id)}`;
-            await asyncQuery(delArticleCategory);
-
-            // delete article comment
-            const delComment = `DELETE FROM blog_comment WHERE blog_id = ${database.escape(id)}`;
-            await asyncQuery(delComment);
-
-            // delete article tags
-            const delArticleTag = `DELETE FROM blog_tag WHERE blog_id = ${database.escape(id)}`;
-            await asyncQuery(delArticleTag);
-
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: `Article with id: ${id} has been deleted`,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
+      res.status(200).send({
+        status: 'success',
+        message: `Article with id: ${id} has been deleted`,
+      });
+    } catch (error) {
+      console.error('deleteBlog error:', error);
+      const statusCode = error.message === 'Blog not found' ? 404 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message === 'Blog not found' ? `Article with id = ${id} doesn't exists` : error.message,
+      });
+    }
+  },
 };

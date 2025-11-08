@@ -1,135 +1,111 @@
-const database = require('../../database');
-const { generateQuery, asyncQuery } = require('../../helpers/queryHelper');
+const { CategoryBlogService } = require('../../services/blog');
+
+const categoryBlogService = new CategoryBlogService();
+
+/**
+ * Blog Categories Controller - Clean Architecture
+ * Manages blog category CRUD operations
+ */
 
 module.exports = {
-    getCategory: async (req, res) => {
-        const { name } = req.query;
-        try {
-            let category = 'SELECT * FROM category_blog';
+  /**
+   * Get all blog categories
+   */
+  getCategory: async (req, res) => {
+    try {
+      const categories = await categoryBlogService.getCategories();
 
-            // check query
-            if (Object.prototype.hasOwnProperty.call(req.query, 'name')) {
-                category += ` WHERE name LIKE '%${name}%'`;
-            }
+      res.status(200).send({
+        status: 'success',
+        message: 'Your request has been successfully',
+        data: categories,
+      });
+    } catch (error) {
+      console.error('getCategory error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
 
-            const result = await asyncQuery(category);
+  /**
+   * Add new category
+   */
+  addCategory: async (req, res) => {
+    const { name } = req.body;
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully',
-                data: result,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    addCategory: async (req, res) => {
-        const { name } = req.body;
-        try {
-            // check category in table
-            const category = `SELECT * FROM category_blog WHERE name = ${database.escape(name)}`;
-            const result = await asyncQuery(category);
+    try {
+      await categoryBlogService.createCategory(name);
 
-            if (result.length !== 0) {
-                res.status(403).send({
-                    status: 'fail',
-                    code: 403,
-                    message: `Category with title = ${name} already exists`,
-                });
-                return;
-            }
+      res.status(200).send({
+        status: 'success',
+        message: 'Category has been added to the database',
+      });
+    } catch (error) {
+      console.error('addCategory error:', error);
+      const statusCode = error.message === 'Category already exists' ? 403 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message === 'Category already exists'
+          ? `Category with title = ${name} already exists`
+          : error.message,
+      });
+    }
+  },
 
-            // insert new category
-            const addCategory = `INSERT INTO category_blog (name) VALUES (${database.escape(name)})`;
-            await asyncQuery(addCategory);
+  /**
+   * Edit category
+   */
+  editCategory: async (req, res) => {
+    const { id } = req.params;
+    const { name } = req.body;
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Category has been added to the database',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    editCategory: async (req, res) => {
-        const { id } = req.params;
+    try {
+      await categoryBlogService.updateCategory(id, name);
 
-        try {
-            // check category in table
-            const category = `SELECT * FROM category_blog WHERE id = ${database.escape(id)}`;
-            const result = await asyncQuery(category);
+      res.status(200).send({
+        status: 'success',
+        message: 'Category has been edited',
+      });
+    } catch (error) {
+      console.error('editCategory error:', error);
+      const statusCode = error.message === 'Category not found' ? 404 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message === 'Category not found'
+          ? `Category with id = ${id} doesn't exists`
+          : error.message,
+      });
+    }
+  },
 
-            if (result.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: `Category with id = ${id} doesn't exists`,
-                });
-                return;
-            }
+  /**
+   * Delete category
+   */
+  deleteCategory: async (req, res) => {
+    const { id } = req.params;
 
-            // edit article data
-            const editCategory = `UPDATE category_blog SET ${generateQuery(req.body)} WHERE id = ${database.escape(id)}`;
-            await asyncQuery(editCategory);
+    try {
+      await categoryBlogService.deleteCategory(id);
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Category has been edited',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    deleteCategory: async (req, res) => {
-        const { id } = req.params;
-        try {
-            // check category
-            const category = `SELECT * FROM category_blog WHERE id = ${database.escape(id)}`;
-            const result = await asyncQuery(category);
-
-            if (result.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: `Category with id = ${id} doesn't exists`,
-                });
-                return;
-            }
-
-            // delete category
-            const delCategory = `DELETE FROM category_blog WHERE id = ${database.escape(id)}`;
-            await asyncQuery(delCategory);
-
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: `Category with id: ${id} has been deleted`,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
+      res.status(200).send({
+        status: 'success',
+        message: `Category with id: ${id} has been deleted`,
+      });
+    } catch (error) {
+      console.error('deleteCategory error:', error);
+      const statusCode = error.message === 'Category not found' ? 404 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message === 'Category not found'
+          ? `Category with id = ${id} doesn't exists`
+          : error.message,
+      });
+    }
+  },
 };

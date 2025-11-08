@@ -226,6 +226,114 @@ class BlogService {
   }
 
   /**
+   * Get all blog-category relationships with details
+   * @returns {Promise<Array>}
+   */
+  async getBlogCategories() {
+    const query = `
+      SELECT bc.blog_id, b.title AS title_blog, bc.category_id, cb.name AS category
+      FROM blog_category bc
+      JOIN blog b ON bc.blog_id = b.id
+      JOIN category_blog cb ON bc.category_id = cb.id
+    `;
+    return this.blogCategoryRepository.rawQuery(query);
+  }
+
+  /**
+   * Get category counts
+   * @returns {Promise<Array>}
+   */
+  async getCategoryCount() {
+    const query = `
+      SELECT bc.category_id, cb.name AS category, COUNT(bc.category_id) AS count
+      FROM blog_category bc
+      JOIN category_blog cb ON bc.category_id = cb.id
+      GROUP BY bc.category_id, cb.name
+      ORDER BY count DESC
+    `;
+    return this.blogCategoryRepository.rawQuery(query);
+  }
+
+  /**
+   * Add categories to the latest blog
+   * @param {Array<number>} categoryIds
+   * @returns {Promise<void>}
+   */
+  async addBlogCategories(categoryIds) {
+    // Check for duplicates
+    const uniqueIds = [...new Set(categoryIds)];
+    if (uniqueIds.length !== categoryIds.length) {
+      throw new Error('Your input has duplicate');
+    }
+
+    // Get latest blog ID
+    const latestBlogs = await this.blogRepository.findAll({
+      orderBy: 'id',
+      order: 'DESC',
+      limit: 1,
+    });
+
+    if (latestBlogs.length === 0) {
+      throw new Error('No blogs found');
+    }
+
+    const blogId = latestBlogs[0].id;
+
+    // Add categories to blog
+    await this.blogCategoryRepository.addCategoriesToBlog(blogId, categoryIds);
+  }
+
+  /**
+   * Update blog categories
+   * @param {number} blogId
+   * @param {Array<number>} categoryIds
+   * @returns {Promise<void>}
+   */
+  async updateBlogCategories(blogId, categoryIds) {
+    // Check if blog exists
+    const blog = await this.blogRepository.findById(blogId);
+    if (!blog) {
+      throw new Error('Blog category not found');
+    }
+
+    // Check for duplicates
+    const uniqueIds = [...new Set(categoryIds)];
+    if (uniqueIds.length !== categoryIds.length) {
+      throw new Error('Your input has duplicate value');
+    }
+
+    // Verify all category IDs exist
+    const categories = await this.categoryBlogRepository.findAll();
+    const validCategoryIds = categories.map((c) => c.id);
+    const allValid = categoryIds.every((id) => validCategoryIds.includes(id));
+
+    if (!allValid) {
+      throw new Error('One of the category id doesn\'t exists in our database');
+    }
+
+    // Delete existing categories
+    await this.blogCategoryRepository.deleteByBlog(blogId);
+
+    // Add new categories
+    await this.blogCategoryRepository.addCategoriesToBlog(blogId, categoryIds);
+  }
+
+  /**
+   * Delete blog-category relationship
+   * @param {number} id
+   * @returns {Promise<void>}
+   */
+  async deleteBlogCategory(id) {
+    const blogCategory = await this.blogCategoryRepository.findById(id);
+
+    if (!blogCategory) {
+      throw new Error('Blog category not found');
+    }
+
+    await this.blogCategoryRepository.delete(id);
+  }
+
+  /**
    * Get all tags
    * @returns {Promise<Array>}
    */
@@ -280,12 +388,152 @@ class BlogService {
   }
 
   /**
-   * Get comments by blog ID
+   * Get all blog-tag relationships with details
+   * @returns {Promise<Array>}
+   */
+  async getBlogTags() {
+    const query = `
+      SELECT bt.blog_id, b.title AS title_blog, bt.tag_id, t.name AS tags
+      FROM blog_tag bt
+      JOIN blog b ON bt.blog_id = b.id
+      JOIN tag_blog t ON bt.tag_id = t.id
+    `;
+    return this.blogTagRepository.rawQuery(query);
+  }
+
+  /**
+   * Get tag counts
+   * @returns {Promise<Array>}
+   */
+  async getTagCount() {
+    const query = `
+      SELECT bt.tag_id, tb.name AS tags, COUNT(bt.tag_id) AS count
+      FROM blog_tag bt
+      JOIN tag_blog tb ON bt.tag_id = tb.id
+      GROUP BY bt.tag_id, tb.name
+      ORDER BY count DESC
+    `;
+    return this.blogTagRepository.rawQuery(query);
+  }
+
+  /**
+   * Add tags to the latest blog
+   * @param {Array<number>} tagIds
+   * @returns {Promise<void>}
+   */
+  async addBlogTags(tagIds) {
+    // Check for duplicates
+    const uniqueIds = [...new Set(tagIds)];
+    if (uniqueIds.length !== tagIds.length) {
+      throw new Error('Your input has duplicate');
+    }
+
+    // Get latest blog ID
+    const latestBlogs = await this.blogRepository.findAll({
+      orderBy: 'id',
+      order: 'DESC',
+      limit: 1,
+    });
+
+    if (latestBlogs.length === 0) {
+      throw new Error('No blogs found');
+    }
+
+    const blogId = latestBlogs[0].id;
+
+    // Add tags to blog
+    await this.blogTagRepository.addTagsToBlog(blogId, tagIds);
+  }
+
+  /**
+   * Update blog tags
+   * @param {number} blogId
+   * @param {Array<number>} tagIds
+   * @returns {Promise<void>}
+   */
+  async updateBlogTags(blogId, tagIds) {
+    // Check if blog exists
+    const blog = await this.blogRepository.findById(blogId);
+    if (!blog) {
+      throw new Error('Blog tag not found');
+    }
+
+    // Check for duplicates
+    const uniqueIds = [...new Set(tagIds)];
+    if (uniqueIds.length !== tagIds.length) {
+      throw new Error('Your input has duplicate value');
+    }
+
+    // Verify all tag IDs exist
+    const tags = await this.tagBlogRepository.findAll();
+    const validTagIds = tags.map((t) => t.id);
+    const allValid = tagIds.every((id) => validTagIds.includes(id));
+
+    if (!allValid) {
+      throw new Error('One of the tag id doesn\'t exists in our database');
+    }
+
+    // Delete existing tags
+    await this.blogTagRepository.deleteByBlog(blogId);
+
+    // Add new tags
+    await this.blogTagRepository.addTagsToBlog(blogId, tagIds);
+  }
+
+  /**
+   * Delete blog-tag relationship
+   * @param {number} id
+   * @returns {Promise<void>}
+   */
+  async deleteBlogTag(id) {
+    const blogTag = await this.blogTagRepository.findById(id);
+
+    if (!blogTag) {
+      throw new Error('Blog tag not found');
+    }
+
+    await this.blogTagRepository.delete(id);
+  }
+
+  /**
+   * Get comments with nested replies (public view - status = 1 only)
    * @param {number} blogId
    * @returns {Promise<Array>}
    */
   async getComments(blogId) {
-    return this.blogCommentRepository.getCommentsByBlog(blogId);
+    const comments = await this.blogCommentRepository.getCommentsWithReplies(blogId, false);
+    return this._processCommentReplies(comments);
+  }
+
+  /**
+   * Get comments with nested replies (admin view - all statuses)
+   * @param {number} blogId
+   * @returns {Promise<Array>}
+   */
+  async getCommentsAdmin(blogId) {
+    const comments = await this.blogCommentRepository.getCommentsWithReplies(blogId, true);
+    return this._processCommentReplies(comments);
+  }
+
+  /**
+   * Process comment replies from string to array of objects
+   * @private
+   */
+  _processCommentReplies(comments) {
+    comments.forEach((comment, index) => {
+      const tempReply = [];
+      const tempArr = comment.reply ? comment.reply.split('//') : [];
+
+      tempArr.forEach((value) => {
+        if (value) {
+          tempReply.push(JSON.parse(value.toString()));
+        }
+      });
+
+      comments[index].reply = tempReply;
+    });
+
+    return comments;
   }
 
   /**
@@ -294,7 +542,7 @@ class BlogService {
    * @returns {Promise<Object>}
    */
   async addComment(commentData) {
-    const { blogId, userId, content } = commentData;
+    const { userId, comment, replyId, blogId, status = 1 } = commentData;
 
     // Check if blog exists
     const blog = await this.blogRepository.findById(blogId);
@@ -302,12 +550,45 @@ class BlogService {
       throw new Error('Blog not found');
     }
 
+    const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
     return this.blogCommentRepository.create({
-      blog_id: blogId,
       user_id: userId,
-      content,
-      created_at: new Date(),
+      date,
+      comment,
+      reply_id: replyId || null,
+      blog_id: blogId,
+      status,
     });
+  }
+
+  /**
+   * Update comment
+   * @param {number} commentId
+   * @param {Object} updateData
+   * @param {string} type - 'admin' or 'user'
+   * @returns {Promise<void>}
+   */
+  async updateComment(commentId, updateData, type = 'user') {
+    const comment = await this.blogCommentRepository.findById(commentId);
+
+    if (!comment) {
+      throw new Error('Comment not found');
+    }
+
+    let dataToUpdate = {};
+
+    if (type === 'admin') {
+      // Admin can only update status
+      dataToUpdate.status = updateData.status;
+    } else {
+      // User can update comment content
+      const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      dataToUpdate.date = date;
+      dataToUpdate.comment = updateData.comment;
+    }
+
+    await this.blogCommentRepository.update(commentId, dataToUpdate);
   }
 
   /**
