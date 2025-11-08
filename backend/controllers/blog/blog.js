@@ -15,7 +15,7 @@ module.exports = {
                     JOIN tag_blog t ON bt.tag_id = t.id
                     GROUP BY bt.blog_id
                 ) tb_1 ON b.id = tb_1.blog_id
-                LEFT JOIN ( SELECT bc.blog_id, GROUP_CONCAT(bc.category_id) AS category_id, GROUP_CONCAT(cb.name) AS category FROM blog_category bc 
+                LEFT JOIN ( SELECT bc.blog_id, GROUP_CONCAT(bc.category_id) AS category_id, GROUP_CONCAT(cb.name) AS category FROM blog_category bc
                     JOIN category_blog cb ON bc.category_id = cb.id
                     GROUP BY bc.blog_id
                 ) tb_2 ON b.id = tb_2.blog_id
@@ -26,25 +26,28 @@ module.exports = {
             const checkCategory = Object.prototype.hasOwnProperty.call(req.query, 'categories');
             const checkTag = Object.prototype.hasOwnProperty.call(req.query, 'tags');
             if (checkSearch && checkCategory && checkTag) {
-                getArticle += ` AND b.title LIKE '%${search}%' AND tb_2.category LIKE '%${categories}%' AND tb_1.tags LIKE '%${tags}%'`;
+                getArticle += ` AND b.title LIKE ${database.escape(`%${search}%`)} AND tb_2.category LIKE ${database.escape(`%${categories}%`)} AND tb_1.tags LIKE ${database.escape(`%${tags}%`)}`;
             } else if (checkSearch && checkCategory) {
-                getArticle += ` AND b.title LIKE '%${search}%' AND tb_2.category LIKE '%${categories}%'`;
+                getArticle += ` AND b.title LIKE ${database.escape(`%${search}%`)} AND tb_2.category LIKE ${database.escape(`%${categories}%`)}`;
             } else if (checkSearch && checkTag) {
-                getArticle += ` AND b.title LIKE '%${search}%' AND tb_1.tags LIKE '%${tags}%'`;
+                getArticle += ` AND b.title LIKE ${database.escape(`%${search}%`)} AND tb_1.tags LIKE ${database.escape(`%${tags}%`)}`;
             } else if (checkTag && checkCategory) {
-                getArticle += ` AND tb_2.category LIKE '%${categories}%' AND tb_1.tags LIKE '%${tags}%'`;
+                getArticle += ` AND tb_2.category LIKE ${database.escape(`%${categories}%`)} AND tb_1.tags LIKE ${database.escape(`%${tags}%`)}`;
             } else if (checkSearch) {
-                getArticle += ` AND b.title LIKE '%${search}%'`;
+                getArticle += ` AND b.title LIKE ${database.escape(`%${search}%`)}`;
             } else if (checkCategory) {
-                getArticle += ` AND tb_2.category LIKE '%${categories}%'`;
+                getArticle += ` AND tb_2.category LIKE ${database.escape(`%${categories}%`)}`;
             } else if (checkTag) {
-                getArticle += ` AND tb_1.tags LIKE '%${tags}%'`;
+                getArticle += ` AND tb_1.tags LIKE ${database.escape(`%${tags}%`)}`;
             }
 
-            // check sort query
+            // check sort query - validate sort field to prevent SQL injection
             let sort = '';
             if (_sort) {
-                sort += ` ORDER BY ${_sort} ${_order ? _order.toUpperCase() : 'ASC'}`;
+                const allowedSortFields = ['id', 'title', 'date', 'view', 'author_name'];
+                const sortField = allowedSortFields.includes(_sort) ? _sort : 'b.date';
+                const sortOrder = _order && _order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+                sort += ` ORDER BY ${sortField} ${sortOrder}`;
             }
 
             getArticle += ` ${sort.length === 0 ? 'ORDER BY b.date DESC' : sort}`;
@@ -95,7 +98,7 @@ module.exports = {
                     JOIN tag_blog t ON bt.tag_id = t.id
                     GROUP BY bt.blog_id
                 ) tb_1 ON b.id = tb_1.blog_id
-                JOIN ( SELECT bc.blog_id, GROUP_CONCAT(bc.category_id) AS category_id, GROUP_CONCAT(cb.name) AS category FROM blog_category bc 
+                JOIN ( SELECT bc.blog_id, GROUP_CONCAT(bc.category_id) AS category_id, GROUP_CONCAT(cb.name) AS category FROM blog_category bc
                     JOIN category_blog cb ON bc.category_id = cb.id
                     GROUP BY bc.blog_id
                 ) tb_2 ON b.id = tb_2.blog_id`;
@@ -103,17 +106,20 @@ module.exports = {
             // type of query
             const checkQuery = (key) => Object.prototype.hasOwnProperty.call(req.query, key);
             if (checkQuery('titles') && checkQuery('status')) {
-                getArticle += ` WHERE b.title LIKE '%${titles}%' ${status !== 'All' ? `AND b.status = ${status}` : ''}`;
+                getArticle += ` WHERE b.title LIKE ${database.escape(`%${titles}%`)} ${status !== 'All' ? `AND b.status = ${database.escape(status)}` : ''}`;
             } else if (checkQuery('titles')) {
-                getArticle += ` WHERE b.title LIKE '%${titles}%'`;
+                getArticle += ` WHERE b.title LIKE ${database.escape(`%${titles}%`)}`;
             } else if (checkQuery('status') && status !== 'All') {
-                getArticle += ` WHERE b.status = '${status}'`;
+                getArticle += ` WHERE b.status = ${database.escape(status)}`;
             }
 
-            // check sort query
+            // check sort query - validate sort field to prevent SQL injection
             let sort = '';
             if (_sort) {
-                sort += ` ORDER BY ${_sort} ${_order ? _order.toUpperCase() : 'ASC'}`;
+                const allowedSortFields = ['id', 'title', 'date', 'view', 'status', 'author_name'];
+                const sortField = allowedSortFields.includes(_sort) ? _sort : 'b.date';
+                const sortOrder = _order && _order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+                sort += ` ORDER BY ${sortField} ${sortOrder}`;
             }
 
             getArticle += ` ${sort.length === 0 ? 'ORDER BY b.date DESC' : sort}`;
@@ -391,7 +397,7 @@ module.exports = {
             }
 
             // edit article data
-            const editArticle = `UPDATE blog SET title = ${database.escape(title)}, content = ${database.escape(content)} WHERE id = ${id}`;
+            const editArticle = `UPDATE blog SET title = ${database.escape(title)}, content = ${database.escape(content)} WHERE id = ${database.escape(id)}`;
             await asyncQuery(editArticle);
 
             // send response
@@ -436,7 +442,7 @@ module.exports = {
             }
 
             // edit article data
-            const editArticle = `UPDATE blog SET ${req.file ? `image = '/image/blog/${req.file.filename}'` : ''} WHERE id = ${id}`;
+            const editArticle = `UPDATE blog SET ${req.file ? `image = ${database.escape(`/image/blog/${req.file.filename}`)}` : ''} WHERE id = ${database.escape(id)}`;
             await asyncQuery(editArticle);
 
             // send response
