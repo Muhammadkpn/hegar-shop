@@ -1,6 +1,19 @@
-// URL
-export const URL = 'http://localhost:2000/api';
-export const URL_IMG = 'http://localhost:2000';
+// Base URLs (override via NEXT_PUBLIC_* env for non-local environments)
+const apiBaseEnv = process.env.NEXT_PUBLIC_API_URL
+    ? process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')
+    : null;
+const assetBaseEnv = process.env.NEXT_PUBLIC_ASSET_URL
+    ? process.env.NEXT_PUBLIC_ASSET_URL.replace(/\/$/, '')
+    : null;
+
+const defaultApiBase = 'http://localhost:2000/api';
+const defaultAssetBase = 'http://localhost:2000';
+
+export const URL = apiBaseEnv || defaultApiBase;
+export const URL_IMG =
+    assetBaseEnv ||
+    (apiBaseEnv && apiBaseEnv.endsWith('/api') ? apiBaseEnv.slice(0, -4) : apiBaseEnv) ||
+    defaultAssetBase;
 
 // cart
 export const ADD_TO_CART = 'ADD_TO_CART';
