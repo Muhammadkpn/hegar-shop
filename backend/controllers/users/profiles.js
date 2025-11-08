@@ -5,6 +5,7 @@ const {
     generateUpdateQuery,
     paginatedQuery,
     today,
+    getImageUrl,
 } = require('../../helpers/queryHelper');
 const { getPaginationParams, createPaginatedResponse } = require('../../helpers/pagination');
 
@@ -134,6 +135,13 @@ module.exports = {
 
             const result = await asyncQuery(getKtp);
 
+            // Convert ktp_image to full URLs
+            result.forEach((item, index) => {
+                if (item.ktp_image) {
+                    result[index].ktp_image = getImageUrl(item.ktp_image, req);
+                }
+            });
+
             // send response
             res.status(200).send({
                 status: 'success',
@@ -154,6 +162,11 @@ module.exports = {
             // get ktp by id
             const getKtp = `SELECT * FROM user_ktp WHERE user_id = ${database.escape(id)};`;
             const result = await asyncQuery(getKtp);
+
+            // Convert ktp_image to full URL if exists
+            if (result.length > 0 && result[0].ktp_image) {
+                result[0].ktp_image = getImageUrl(result[0].ktp_image, req);
+            }
 
             // send response
             res.status(200).send({
@@ -272,6 +285,13 @@ module.exports = {
 
             const result = await asyncQuery(getBank);
 
+            // Convert bank_image to full URLs
+            result.forEach((item, index) => {
+                if (item.bank_image) {
+                    result[index].bank_image = getImageUrl(item.bank_image, req);
+                }
+            });
+
             // send response
             res.status(200).send({
                 status: 'success',
@@ -305,6 +325,13 @@ module.exports = {
                 getBank += ` AND (bank_name LIKE '%${search}%' OR account_name LIKE '%${search}%' OR account_number LIKE '%${search}%')`;
             }
             const result = await asyncQuery(getBank);
+
+            // Convert bank_image to full URLs
+            result.forEach((item, index) => {
+                if (item.bank_image) {
+                    result[index].bank_image = getImageUrl(item.bank_image, req);
+                }
+            });
 
             // send response
             res.status(200).send({

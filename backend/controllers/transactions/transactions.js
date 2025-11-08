@@ -84,6 +84,10 @@ module.exports = {
                 if (item.recipient_address) {
                     getMainOrders[index].recipient_address = JSON.parse(item.recipient_address);
                 }
+                // Convert receipt_image to full URL
+                if (item.receipt_image) {
+                    getMainOrders[index].receipt_image = getImageUrl(item.receipt_image, req);
+                }
             });
 
             // get total_price and products in every single item products in sub_order_number
