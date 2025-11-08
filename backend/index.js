@@ -6,17 +6,31 @@ const app = express();
 dotenv.config();
 
 app.use(express.json()); // Used to parse JSON bodies
-// cors
-if (process.env.NODE_ENV === 'development') {
-    app.use(
-        cors({
-            origin: `${process.env.CLIENT_URL}`,
-            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-            preflightContinue: false,
-            optionsSuccessStatus: 204,
-        }),
-    );
-}
+
+// CORS configuration - enabled for all environments
+const allowedOrigins = process.env.CLIENT_URL
+    ? process.env.CLIENT_URL.split(',').map((url) => url.trim())
+    : ['http://localhost:3000'];
+
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            // Allow requests with no origin (like mobile apps, curl, Postman)
+            if (!origin) return callback(null, true);
+
+            if (allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+        credentials: true,
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
+    }),
+);
+
 app.use(express.static('./public'));
 
 // test
