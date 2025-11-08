@@ -94,11 +94,21 @@ export const userKeepLogin = () => {
     return async (dispatch) => {
         try {
             const token = localStorage.getItem('token');
-            const resUser = await Axios.post(URL + '/users/keepLogin', { token });
+            const resUser = await Axios.post(
+                URL + '/users/keepLogin',
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
             dispatch({ type: LOG_IN, payload: resUser.data });
         } catch (error) {
             // auto log out when action get an error
-            if (error.response?.data?.message?.message === 'jwt expired') {
+            if (error.response?.data?.message === 'Token has expired' ||
+                error.response?.data?.message === 'jwt expired' ||
+                error.response?.status === 401) {
                 localStorage.removeItem('id');
                 localStorage.removeItem('token');
                 localStorage.removeItem('role_id');
@@ -123,7 +133,16 @@ export const userLogout = () => {
 export const emailVerification = (body) => {
     return async (dispatch) => {
         try {
-            const result = await Axios.patch(`${URL}/users/verification/email`, body)
+            const { token } = body;
+            const result = await Axios.patch(
+                `${URL}/users/verification/email`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
             dispatch({ type: EMAIL_VERIFICATION, payload: result.data })
         } catch (error) {
             console.log(error.response ? error.response.data : error);
@@ -146,7 +165,16 @@ export const sendEmailResetPassword = (body) => {
 export const checkExpiredResetPassword = (body) => {
     return async (dispatch) => {
         try {
-            const result = await Axios.post(`${URL}/users/verification/reset-password/check-expired`, body);
+            const { token } = body;
+            const result = await Axios.post(
+                `${URL}/users/verification/reset-password/check-expired`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
             dispatch({ type: RESET_PASSWORD, payload: result.data });
         } catch (error) {
             console.log(error.response ? error.response.data : error);
