@@ -1,5 +1,5 @@
 const database = require('../../database');
-const { asyncQuery, today } = require('../../helpers/queryHelper');
+const { asyncQuery, today, getImageUrl } = require('../../helpers/queryHelper');
 
 module.exports = {
     getBlog: async (req, res) => {
@@ -50,7 +50,7 @@ module.exports = {
             getArticle += ` ${sort.length === 0 ? 'ORDER BY b.date DESC' : sort}`;
             const result = await asyncQuery(getArticle);
 
-            // convert data from string to array
+            // convert data from string to array and convert image to full URL
             let tempCategory = [];
             let tempTags = [];
             result.forEach((item, index) => {
@@ -60,6 +60,10 @@ module.exports = {
 
                     result[index].category = tempCategory;
                     result[index].tags = tempTags;
+                }
+                // Convert blog image to full URL
+                if (item.image) {
+                    result[index].image = getImageUrl(item.image, req);
                 }
             });
 
@@ -115,7 +119,7 @@ module.exports = {
             getArticle += ` ${sort.length === 0 ? 'ORDER BY b.date DESC' : sort}`;
             const result = await asyncQuery(getArticle);
 
-            // convert data from string to array
+            // convert data from string to array and convert image to full URL
             let tempCategory = [];
             let tempTags = [];
             result.forEach((item, index) => {
@@ -124,6 +128,11 @@ module.exports = {
 
                 result[index].category = tempCategory;
                 result[index].tags = tempTags;
+
+                // Convert blog image to full URL
+                if (item.image) {
+                    result[index].image = getImageUrl(item.image, req);
+                }
             });
 
             // send response
@@ -160,7 +169,7 @@ module.exports = {
 
             const result = await asyncQuery(getArticle);
 
-            // convert data from string to array
+            // convert data from string to array and convert image to full URL
             let category = [];
             let tags = [];
 
@@ -170,6 +179,10 @@ module.exports = {
                     tags = item.tags.split(',');
                     result[index].category = category;
                     result[index].tags = tags;
+                }
+                // Convert blog image to full URL
+                if (item.image) {
+                    result[index].image = getImageUrl(item.image, req);
                 }
             });
 
@@ -256,6 +269,13 @@ module.exports = {
             // get top four popular article by view
             const query = 'SELECT * FROM blog WHERE status = 1 ORDER BY view DESC LIMIT 4';
             const result = await asyncQuery(query);
+
+            // Convert blog images to full URLs
+            result.forEach((item, index) => {
+                if (item.image) {
+                    result[index].image = getImageUrl(item.image, req);
+                }
+            });
 
             res.status(200).send({
                 status: 'success',
