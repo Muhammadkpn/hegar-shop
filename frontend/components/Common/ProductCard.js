@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { getFullImageUrl } from '../../store/helpers';
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,17 +32,48 @@ const ProductCard = ({ data, user_id, wishlist, type, ...props }) => {
         };
     });
     const dispatch = useDispatch();
-    React.useEffect(() => {
+    const tooltipRefs = useRef([]);
+
+    useEffect(() => {
         if (product_id) {
             dispatch(getProductDetails(product_id));
         }
     }, [product_id]);
 
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip();
-        $(`#btn-remove-wishlist${id}`).tooltip();
-        $(`#btn-add-wishlist${id}`).tooltip();
-    });
+    // Initialize Bootstrap 5 tooltips
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            // Dynamically import Bootstrap only on client-side
+            import('bootstrap/dist/js/bootstrap.bundle.min.js').then((bootstrap) => {
+                const tooltipTriggerList = document.querySelectorAll('[data-toggle="tooltip"]');
+                tooltipRefs.current = Array.from(tooltipTriggerList).map(
+                    (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl)
+                );
+            });
+        }
+
+        // Cleanup tooltips on unmount
+        return () => {
+            tooltipRefs.current.forEach((tooltip) => {
+                if (tooltip && tooltip.dispose) {
+                    tooltip.dispose();
+                }
+            });
+        };
+    }, [id]);
+
+    // Helper function to open Bootstrap 5 modals
+    const openModal = (modalId) => {
+        if (typeof window !== 'undefined') {
+            import('bootstrap/dist/js/bootstrap.bundle.min.js').then((bootstrap) => {
+                const modalElement = document.getElementById(modalId);
+                if (modalElement) {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                }
+            });
+        }
+    };
 
     return (
         <div className='product-card'>
@@ -79,15 +110,13 @@ const ProductCard = ({ data, user_id, wishlist, type, ...props }) => {
                                                   })
                                               )
                                             : null;
-                                        $(
-                                            `#${
-                                                !user_id
-                                                    ? `login-product-card${type ? `-${type}` : ''}`
-                                                    : wishlist
-                                                    ? `remove-product-card${type ? `-${type}` : ''}`
-                                                    : `add-product-card${type ? `-${type}` : ''}`
-                                            }`
-                                        ).modal();
+                                        openModal(
+                                            !user_id
+                                                ? `login-product-card${type ? `-${type}` : ''}`
+                                                : wishlist
+                                                ? `remove-product-card${type ? `-${type}` : ''}`
+                                                : `add-product-card${type ? `-${type}` : ''}`
+                                        );
                                     }}
                                 >
                                     <i
@@ -119,13 +148,11 @@ const ProductCard = ({ data, user_id, wishlist, type, ...props }) => {
                                                   })
                                               )
                                             : null;
-                                        $(
-                                            `#${
-                                                !user_id
-                                                    ? `login-product-card${type ? `-${type}` : ''}`
-                                                    : `cart-product-card${type ? `-${type}` : ''}`
-                                            }`
-                                        ).modal();
+                                        openModal(
+                                            !user_id
+                                                ? `login-product-card${type ? `-${type}` : ''}`
+                                                : `cart-product-card${type ? `-${type}` : ''}`
+                                        );
                                     }}
                                 >
                                     <i className='bx bxs-cart-add bx-sm'></i>
@@ -141,11 +168,11 @@ const ProductCard = ({ data, user_id, wishlist, type, ...props }) => {
                                     title='Quick view'
                                     className='btn bg-white overlay-button'
                                     onClick={() => {
-                                        user_id
-                                            ? $(`#quick-view${type ? `-${type}` : ''}`).modal()
-                                            : $(
-                                                  `#login-product-card${type ? `-${type}` : ''}`
-                                              ).modal();
+                                        if (user_id) {
+                                            openModal(`quick-view${type ? `-${type}` : ''}`);
+                                        } else {
+                                            openModal(`login-product-card${type ? `-${type}` : ''}`);
+                                        }
                                         let pathname = router.pathname;
                                         if (pathname.indexOf('[') !== -1) {
                                             pathname = pathname.slice(0, pathname.indexOf('['));
