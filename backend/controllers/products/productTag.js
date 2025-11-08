@@ -28,7 +28,7 @@ module.exports = {
         try {
             // count tag in table
             const countTag = `SELECT pt.tag_id, tp.name AS tags, COUNT(pt.tag_id) AS count FROM product_tag pt
-                        JOIN tag_product tp ON pt.tag_id = tp.id GROUP BY tp.name ORDER BY count DESC`;
+                        JOIN tag_product tp ON pt.tag_id = tp.id GROUP BY pt.tag_id, tp.name ORDER BY count DESC`;
             const result = await asyncQuery(countTag);
 
             // response
@@ -53,7 +53,7 @@ module.exports = {
                         JOIN tag_product tp ON pt.tag_id = tp.id
                         JOIN products p ON pt.product_id = p.id
                         WHERE p.store_id = ${database.escape(id)}
-                        GROUP BY tp.name ORDER BY count DESC`;
+                        GROUP BY pt.tag_id, tp.name ORDER BY count DESC`;
             const result = await asyncQuery(countTag);
             const finalResult = { store_id: id, countTag: result };
 

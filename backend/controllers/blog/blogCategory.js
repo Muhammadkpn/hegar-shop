@@ -29,7 +29,7 @@ module.exports = {
         try {
             // count category
             const countCategory = `SELECT bc.category_id, cb.name AS category, COUNT(bc.category_id) AS count FROM blog_category bc
-                            JOIN category_blog cb ON bc.category_id = cb.id GROUP BY bc.category_id ORDER BY count DESC;`;
+                            JOIN category_blog cb ON bc.category_id = cb.id GROUP BY bc.category_id, cb.name ORDER BY count DESC;`;
             const result = await asyncQuery(countCategory);
 
             // send response
