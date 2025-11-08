@@ -79,7 +79,7 @@ module.exports = {
                 if (item.products.length > 0) {
                     item.products.forEach(async (value) => {
                         if (value.price_each !== value.sale_price) {
-                            const updatePrice = `UPDATE order_details SET price_each = ${value.sale_price} WHERE id = ${value.id}`;
+                            const updatePrice = `UPDATE order_details SET price_each = ${database.escape(value.sale_price)} WHERE id = ${database.escape(value.id)}`;
                             await asyncQuery(updatePrice);
                             value.price_each = value.sale_price;
                         }
@@ -194,7 +194,7 @@ module.exports = {
                     return;
                 }
                 // + qty product_id on order_details
-                const addToCart = `UPDATE order_details SET qty = ${resultCheckProd[0].qty + qty}, price_each = ${database.escape(priceEach)} WHERE order_number = ${database.escape(orderNum)} AND product_id = ${database.escape(productId)}`;
+                const addToCart = `UPDATE order_details SET qty = ${database.escape(resultCheckProd[0].qty + qty)}, price_each = ${database.escape(priceEach)} WHERE order_number = ${database.escape(orderNum)} AND product_id = ${database.escape(productId)}`;
                 await asyncQuery(addToCart);
             }
 
@@ -264,7 +264,7 @@ module.exports = {
             }
 
             // update product from order_details
-            const editProduct = `UPDATE order_details SET qty = ${qty} WHERE id = ${id}`;
+            const editProduct = `UPDATE order_details SET qty = ${database.escape(qty)} WHERE id = ${database.escape(id)}`;
             await asyncQuery(editProduct);
 
             // send response
@@ -287,7 +287,7 @@ module.exports = {
 
         try {
             // check orderNumber di tabel orders
-            const checkOrder = `SELECT * FROM order_details WHERE id = ${id}`;
+            const checkOrder = `SELECT * FROM order_details WHERE id = ${database.escape(id)}`;
             const resCheckOrder = await asyncQuery(checkOrder);
 
             //  send response if cart doesnt exists
@@ -301,7 +301,7 @@ module.exports = {
             }
 
             // delete product from order_details
-            const deleteCart = `DELETE FROM order_details WHERE id = ${id}`;
+            const deleteCart = `DELETE FROM order_details WHERE id = ${database.escape(id)}`;
             await asyncQuery(deleteCart);
 
             //  send response

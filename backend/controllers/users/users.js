@@ -1,5 +1,5 @@
 const { validationResult } = require('express-validator');
-const CryptoJS = require('crypto-js');
+const bcrypt = require('bcrypt');
 const {
     asyncQuery,
     generateUpdateQuery,
@@ -14,7 +14,7 @@ const {
     sendPasswordResetEmail,
 } = require('../../helpers/emailHelper');
 
-const { SECRET_KEY } = process.env;
+const SALT_ROUNDS = 10;
 
 /**
  * Users Controller - Optimized & Secured
@@ -202,8 +202,8 @@ module.exports = {
                 });
             }
 
-            // Hash password
-            const hashPass = CryptoJS.HmacMD5(password, SECRET_KEY).toString();
+            // Hash password with bcrypt
+            const hashPass = await bcrypt.hash(password, SALT_ROUNDS);
 
             // Insert user
             const insertQuery = `
@@ -306,9 +306,9 @@ module.exports = {
                 });
             }
 
-            // Verify password
-            const hashPass = CryptoJS.HmacMD5(password, SECRET_KEY).toString();
-            if (hashPass !== user.password) {
+            // Verify password with bcrypt
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+            if (!isPasswordValid) {
                 return res.status(400).send({
                     status: 'fail',
                     code: 400,
@@ -440,8 +440,8 @@ module.exports = {
                 });
             }
 
-            // Hash new password
-            const hashPass = CryptoJS.HmacMD5(password, SECRET_KEY).toString();
+            // Hash new password with bcrypt
+            const hashPass = await bcrypt.hash(password, SALT_ROUNDS);
 
             // Update password
             const updateQuery = 'UPDATE users SET password = ? WHERE email = ?';
@@ -466,7 +466,6 @@ module.exports = {
      * FIXED: SQL injection vulnerability
      */
     checkExpiredResetPassword: async (req, res) => {
-        const { token } = req.body;
         const { iat, exp } = req.data;
 
         try {
@@ -493,7 +492,7 @@ module.exports = {
                     id,
                     username,
                     email,
-                    dataToken: { token, createdDate, expiredDate },
+                    dataToken: { token: req.token, createdDate, expiredDate },
                 },
             });
         } catch (error) {
@@ -535,7 +534,6 @@ module.exports = {
      * FIXED: SQL injection vulnerability
      */
     keepLogin: async (req, res) => {
-        const { token } = req.body;
         const { iat, exp } = req.data;
 
         try {
@@ -561,7 +559,7 @@ module.exports = {
                 message: 'Session is valid',
                 data: {
                     ...result[0],
-                    dataToken: { token, createdDate, expiredDate },
+                    dataToken: { token: req.token, createdDate, expiredDate },
                 },
             });
         } catch (error) {
@@ -633,12 +631,21 @@ module.exports = {
         }
 
         try {
-            // Verify current password
-            const hashPass = CryptoJS.HmacMD5(password, SECRET_KEY).toString();
-            const checkQuery = 'SELECT * FROM users WHERE id = ? AND password = ?';
-            const result = await asyncQuery(checkQuery, [id, hashPass]);
+            // Get current user
+            const checkQuery = 'SELECT * FROM users WHERE id = ?';
+            const result = await asyncQuery(checkQuery, [id]);
 
             if (result.length === 0) {
+                return res.status(404).send({
+                    status: 'fail',
+                    code: 404,
+                    message: 'User not found',
+                });
+            }
+
+            // Verify current password with bcrypt
+            const isPasswordValid = await bcrypt.compare(password, result[0].password);
+            if (!isPasswordValid) {
                 return res.status(422).send({
                     status: 'fail',
                     code: 422,
@@ -646,8 +653,8 @@ module.exports = {
                 });
             }
 
-            // Hash new password
-            const hashNewPass = CryptoJS.HmacMD5(newPassword, SECRET_KEY).toString();
+            // Hash new password with bcrypt
+            const hashNewPass = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
             // Update password
             const updateQuery = 'UPDATE users SET password = ? WHERE id = ?';

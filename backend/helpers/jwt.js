@@ -4,33 +4,73 @@ const { TOKEN_KEY } = process.env;
 
 module.exports = {
     // create token
-    createToken: (data) => jwt.sign(data, TOKEN_KEY, { expiresIn: '8hr' }),
+    createToken: (data, expiresIn = '8hr') => jwt.sign(data, TOKEN_KEY, { expiresIn }),
     // verify token as middleware
     verify: (req, res, next) => {
-        const { token } = req.body;
         try {
-            if (!token) {
-                res.status(400).send({
+            // Get token from Authorization header
+            const authHeader = req.headers.authorization;
+
+            if (!authHeader) {
+                return res.status(401).send({
                     status: 'fail',
-                    code: 400,
-                    message: 'No token!',
+                    code: 401,
+                    message: 'No authorization header provided',
                 });
-                return;
             }
-            // verify tokenn
+
+            // Check if header starts with 'Bearer '
+            if (!authHeader.startsWith('Bearer ')) {
+                return res.status(401).send({
+                    status: 'fail',
+                    code: 401,
+                    message: 'Invalid authorization format. Use: Bearer <token>',
+                });
+            }
+
+            // Extract token from 'Bearer <token>'
+            const token = authHeader.substring(7);
+
+            if (!token) {
+                return res.status(401).send({
+                    status: 'fail',
+                    code: 401,
+                    message: 'No token provided',
+                });
+            }
+
+            // Verify token
             const result = jwt.verify(token, TOKEN_KEY);
 
-            // add token data to req
+            // Add token data to req
             req.data = result;
+            req.token = token;
 
             // next
             next();
         } catch (error) {
             console.log(error);
+
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).send({
+                    status: 'fail',
+                    code: 401,
+                    message: 'Token has expired',
+                });
+            }
+
+            if (error.name === 'JsonWebTokenError') {
+                return res.status(401).send({
+                    status: 'fail',
+                    code: 401,
+                    message: 'Invalid token',
+                });
+            }
+
             res.status(500).send({
                 status: 'fail',
                 code: 500,
-                message: error,
+                message: error.message,
             });
         }
     },
