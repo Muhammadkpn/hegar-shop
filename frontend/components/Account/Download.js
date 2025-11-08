@@ -8,9 +8,7 @@ const Download = () => {
             <img src={getFullImageUrl('image/logo/empty-download.png')} />
             <p>No downloads available yet.</p>
             <Link href="/shop">
-                <a>
-                    <button type="button" className="btn btn-primary">Go to shop</button>
-                </a>
+                <button type="button" className="btn btn-primary">Go to shop</button>
             </Link>
         </div>
     )

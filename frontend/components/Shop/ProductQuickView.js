@@ -90,34 +90,28 @@ const ProductQuickView = ({ data, wishlist, user_id, type }) => {
                                 <span> ({rating || 0}/5)</span>
                             </div>
 
-                            <Link href='#'>
-                                <a onClick={(e) => e.preventDefault()} className='rating-count'>
-                                    {total_review} reviews
-                                </a>
+                            <Link href='#' onClick={(e) => e.preventDefault()} className='rating-count'>
+                                {total_review} reviews
                             </Link>
                         </div>
 
                         <ul className='products-info'>
                             <li>
                                 <span>Vendor:</span>
-                                <Link href='#'>
-                                    <a onClick={(e) => e.preventDefault()}>{username}</a>
+                                <Link href='#' onClick={(e) => e.preventDefault()}>
+                                    {username}
                                 </Link>
                             </li>
                             <li>
                                 <span>Availability:</span>
-                                <Link href='#'>
-                                    <a onClick={(e) => e.preventDefault()}>
-                                        In stock ({stock} items)
-                                    </a>
+                                <Link href='#' onClick={(e) => e.preventDefault()}>
+                                    In stock ({stock} items)
                                 </Link>
                             </li>
                             <li>
                                 <span>Category:</span>
-                                <Link href='#'>
-                                    <a onClick={(e) => e.preventDefault()}>
-                                        {category ? category.join(', ') : ''}
-                                    </a>
+                                <Link href='#' onClick={(e) => e.preventDefault()}>
+                                    {category ? category.join(', ') : ''}
                                 </Link>
                             </li>
                         </ul>

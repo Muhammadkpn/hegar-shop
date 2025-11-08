@@ -439,29 +439,27 @@ const OrderSummary = ({ disabled, user_id }) => {
                 </div>
 
                 <Link href='#'>
-                    <a>
-                        <button
-                            type='button'
-                            className='default-btn'
-                            data-toggle='modal'
-                            data-target='#checkout_done'
-                            onClick={(e) => {
-                                e.preventDefault();
-                                dispatch(
-                                    checkoutConfirmation(
-                                        {
-                                            shippingOrder,
-                                        },
-                                        cart.order_number,
-                                        user_id
-                                    )
-                                );
-                            }}
-                            disabled={disabled || (shippingOrder.length !== booleanOrder.length)}
-                        >
-                            Place Order
-                        </button>
-                    </a>
+                    <button
+                        type='button'
+                        className='default-btn'
+                        data-toggle='modal'
+                        data-target='#checkout_done'
+                        onClick={(e) => {
+                            e.preventDefault();
+                            dispatch(
+                                checkoutConfirmation(
+                                    {
+                                        shippingOrder,
+                                    },
+                                    cart.order_number,
+                                    user_id
+                                )
+                            );
+                        }}
+                        disabled={disabled || (shippingOrder.length !== booleanOrder.length)}
+                    >
+                        Place Order
+                    </button>
                 </Link>
             </div>
             <ModalComp
@@ -471,13 +469,11 @@ const OrderSummary = ({ disabled, user_id }) => {
                 }
                 footer={
                     <div className='justify-content-between'>
-                        <Link href='/shop'>
-                            <a className='mr-3' data-dismiss='modal'>
-                                Buy Again
-                            </a>
+                        <Link href='/shop' className='mr-3' data-dismiss='modal'>
+                            Buy Again
                         </Link>
                         <Link href='/account?section=orders' data-dismiss='modal'>
-                            <a>Upload Payment</a>
+                            Upload Payment
                         </Link>
                     </div>
                 }

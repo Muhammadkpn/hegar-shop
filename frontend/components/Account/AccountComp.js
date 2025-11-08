@@ -27,15 +27,13 @@ const AccountComp = ({ section, username, email }) => {
                         <div className='account-subtitle d-flex justify-content-between align-items-center px-4'>
                             <p className='text-light mb-0'>Hello, {username}</p>
                             <Link href='/'>
-                                <a>
-                                    <button
-                                        type='button'
-                                        className='btn btn-outline-primary'
-                                        onClick={() => dispatch(userLogout())}
-                                    >
-                                        <i className='bx bx-log-out'></i> Logout
-                                    </button>
-                                </a>
+                                <button
+                                    type='button'
+                                    className='btn btn-outline-primary'
+                                    onClick={() => dispatch(userLogout())}
+                                >
+                                    <i className='bx bx-log-out'></i> Logout
+                                </button>
                             </Link>
                         </div>
                     </div>
@@ -60,73 +58,68 @@ const AccountComp = ({ section, username, email }) => {
                         </div>
                         <ul>
                             <li>
-                                <Link href='/account?section=dashboard'>
-                                    <a
-                                        style={{
-                                            color:
-                                                `${section}`.toLowerCase() === 'dashboard'
-                                                    ? '#172C93'
-                                                    : '',
-                                        }}
-                                    >
-                                        <i className='bx bx-home mr-2'></i>Dashboard
-                                    </a>
+                                <Link
+                                    href='/account?section=dashboard'
+                                    style={{
+                                        color:
+                                            `${section}`.toLowerCase() === 'dashboard'
+                                                ? '#172C93'
+                                                : '',
+                                    }}
+                                >
+                                    <i className='bx bx-home mr-2'></i>Dashboard
                                 </Link>
                             </li>
                             <li>
-                                <Link href='/account?section=orders'>
-                                    <a
-                                        style={{
-                                            color:
-                                                `${section}`.toLowerCase() === 'orders'
-                                                    ? '#172C93'
-                                                    : '',
-                                        }}
-                                    >
-                                        <i className='bx bx-shopping-bag mr-2'></i>Orders
-                                    </a>
+                                <Link
+                                    href='/account?section=orders'
+                                    style={{
+                                        color:
+                                            `${section}`.toLowerCase() === 'orders'
+                                                ? '#172C93'
+                                                : '',
+                                    }}
+                                >
+                                    <i className='bx bx-shopping-bag mr-2'></i>Orders
                                 </Link>
                             </li>
                             <li>
-                                <Link href='/account?section=download'>
-                                    <a
-                                        style={{
-                                            color:
-                                                `${section}`.toLowerCase() === 'download'
-                                                    ? '#172C93'
-                                                    : '',
-                                        }}
-                                    >
-                                        <i className='bx bx-cloud-download mr-2'></i>Download
-                                    </a>
+                                <Link
+                                    href='/account?section=download'
+                                    style={{
+                                        color:
+                                            `${section}`.toLowerCase() === 'download'
+                                                ? '#172C93'
+                                                : '',
+                                    }}
+                                >
+                                    <i className='bx bx-cloud-download mr-2'></i>Download
                                 </Link>
                             </li>
                             <li>
-                                <Link href='/account?section=addresses'>
-                                    <a
-                                        style={{
-                                            color:
-                                                `${section}`.toLowerCase() === 'addresses'
-                                                    ? '#172C93'
-                                                    : '',
-                                        }}
-                                    >
-                                        <i className='bx bx-map mr-2'></i>Addresses
-                                    </a>
+                                <Link
+                                    href='/account?section=addresses'
+                                    style={{
+                                        color:
+                                            `${section}`.toLowerCase() === 'addresses'
+                                                ? '#172C93'
+                                                : '',
+                                    }}
+                                >
+                                    <i className='bx bx-map mr-2'></i>Addresses
                                 </Link>
                             </li>
                             <li>
-                                <Link href='/account?section=account-details'>
-                                    <a
-                                        style={{
-                                            color:
-                                                `${section}`.toLowerCase() === 'account-details'
-                                                    ? '#172C93'
-                                                    : '',
-                                        }}
-                                    >
-                                        <i className='bx bx-user mr-2'></i>Account Details
-                                    </a>
+                                <Link
+                                    href='/account?section=account-details'
+                                    style={{
+                                        color:
+                                            `${section}`.toLowerCase() === 'account-details'
+                                                ? '#172C93'
+                                                : '',
+                                    }}
+                                >
+                                    <i className='bx bx-user mr-2'></i>Account Details
                                 </Link>
                             </li>
                         </ul>

@@ -39,46 +39,38 @@ class BlogDetails extends Component {
                                                             : '#'
                                                     }
                                                 >
-                                                    <a>
-                                                        {blogDetails.category
-                                                            ? blogDetails.category[0]
-                                                            : 'Category'}
-                                                    </a>
+                                                    {blogDetails.category
+                                                        ? blogDetails.category[0]
+                                                        : 'Category'}
                                                 </Link>
                                             </li>
                                             <li>
                                                 <i className='bx bx-group'></i>
                                                 <span>View</span>
                                                 <Link href='#'>
-                                                    <a>
-                                                        {blogDetails.view
-                                                            ? blogDetails.view.toLocaleString()
-                                                            : '813,454'}
-                                                    </a>
+                                                    {blogDetails.view
+                                                        ? blogDetails.view.toLocaleString()
+                                                        : '813,454'}
                                                 </Link>
                                             </li>
                                             <li>
                                                 <i className='bx bx-calendar'></i>
                                                 <span>Last Updated</span>
                                                 <Link href='#'>
-                                                    <a>
-                                                        {blogDetails.date
-                                                            ? new Date(
-                                                                  blogDetails.date
-                                                              ).toLocaleDateString()
-                                                            : '11/04/1996'}
-                                                    </a>
+                                                    {blogDetails.date
+                                                        ? new Date(
+                                                              blogDetails.date
+                                                          ).toLocaleDateString()
+                                                        : '11/04/1996'}
                                                 </Link>
                                             </li>
                                             <li>
                                                 <i className='bx bx-pencil'></i>
                                                 <span>Author</span>
                                                 <Link href='#'>
-                                                    <a>
-                                                        {blogDetails.author_name
-                                                            ? blogDetails.author_name
-                                                            : 'Wiselaadmin'}
-                                                    </a>
+                                                    {blogDetails.author_name
+                                                        ? blogDetails.author_name
+                                                        : 'Wiselaadmin'}
                                                 </Link>
                                             </li>
                                         </ul>
@@ -106,7 +98,7 @@ class BlogDetails extends Component {
                                             (item, index) => {
                                                 return (
                                                     <Link href='#' key={index}>
-                                                        <a>{item}</a>
+                                                        {item}
                                                     </Link>
                                                 );
                                             }
@@ -119,31 +111,23 @@ class BlogDetails extends Component {
                                                 <span>Share:</span>
                                             </li>
                                             <li>
-                                                <Link href='#'>
-                                                    <a className='facebook' target='_blank'>
-                                                        <i className='bx bxl-facebook'></i>
-                                                    </a>
+                                                <Link href='#' className='facebook' target='_blank'>
+                                                    <i className='bx bxl-facebook'></i>
                                                 </Link>
                                             </li>
                                             <li>
-                                                <Link href='#'>
-                                                    <a className='twitter' target='_blank'>
-                                                        <i className='bx bxl-twitter'></i>
-                                                    </a>
+                                                <Link href='#' className='twitter' target='_blank'>
+                                                    <i className='bx bxl-twitter'></i>
                                                 </Link>
                                             </li>
                                             <li>
-                                                <Link href='#'>
-                                                    <a className='linkedin' target='_blank'>
-                                                        <i className='bx bxl-linkedin'></i>
-                                                    </a>
+                                                <Link href='#' className='linkedin' target='_blank'>
+                                                    <i className='bx bxl-linkedin'></i>
                                                 </Link>
                                             </li>
                                             <li>
-                                                <Link href='#'>
-                                                    <a className='instagram' target='_blank'>
-                                                        <i className='bx bxl-instagram'></i>
-                                                    </a>
+                                                <Link href='#' className='instagram' target='_blank'>
+                                                    <i className='bx bxl-instagram'></i>
                                                 </Link>
                                             </li>
                                         </ul>
@@ -162,38 +146,36 @@ class BlogDetails extends Component {
                                                                 : '#'
                                                         }
                                                     >
-                                                        <a>
-                                                            <span className='image-prev'>
-                                                                <img
-                                                                    src={
-                                                                        othersBlog[1]
-                                                                            ? getFullImageUrl(othersBlog[1].image)
-                                                                            : ''
-                                                                    }
-                                                                    alt='image'
-                                                                />
-                                                                <span className='post-nav-title'>
-                                                                    Prev
-                                                                </span>
+                                                        <span className='image-prev'>
+                                                            <img
+                                                                src={
+                                                                    othersBlog[1]
+                                                                        ? getFullImageUrl(othersBlog[1].image)
+                                                                        : ''
+                                                                }
+                                                                alt='image'
+                                                            />
+                                                            <span className='post-nav-title'>
+                                                                Prev
                                                             </span>
+                                                        </span>
 
-                                                            <span className='prev-link-info-wrapper'>
-                                                                <span className='prev-title'>
+                                                        <span className='prev-link-info-wrapper'>
+                                                            <span className='prev-title'>
+                                                                {othersBlog[1]
+                                                                    ? othersBlog[1].title
+                                                                    : ''}
+                                                            </span>
+                                                            <span className='meta-wrapper'>
+                                                                <span className='date-post'>
                                                                     {othersBlog[1]
-                                                                        ? othersBlog[1].title
-                                                                        : ''}
-                                                                </span>
-                                                                <span className='meta-wrapper'>
-                                                                    <span className='date-post'>
-                                                                        {othersBlog[1]
-                                                                            ? new Date(
-                                                                                  othersBlog[1].date
-                                                                              ).toLocaleDateString()
-                                                                            : '10/10/2010'}
-                                                                    </span>
+                                                                        ? new Date(
+                                                                              othersBlog[1].date
+                                                                          ).toLocaleDateString()
+                                                                        : '10/10/2010'}
                                                                 </span>
                                                             </span>
-                                                        </a>
+                                                        </span>
                                                     </Link>
                                                 ) : null
                                             ) : null}
@@ -211,38 +193,36 @@ class BlogDetails extends Component {
                                                                 : '#'
                                                         }
                                                     >
-                                                        <a>
-                                                            <span className='next-link-info-wrapper'>
-                                                                <span className='next-title'>
+                                                        <span className='next-link-info-wrapper'>
+                                                            <span className='next-title'>
+                                                                {othersBlog[0]
+                                                                    ? othersBlog[0].title
+                                                                    : ''}
+                                                            </span>
+                                                            <span className='meta-wrapper'>
+                                                                <span className='date-post'>
                                                                     {othersBlog[0]
-                                                                        ? othersBlog[0].title
-                                                                        : ''}
-                                                                </span>
-                                                                <span className='meta-wrapper'>
-                                                                    <span className='date-post'>
-                                                                        {othersBlog[0]
-                                                                            ? new Date(
-                                                                                  othersBlog[0].date
-                                                                              ).toLocaleDateString()
-                                                                            : '10/10/2010'}
-                                                                    </span>
+                                                                        ? new Date(
+                                                                              othersBlog[0].date
+                                                                          ).toLocaleDateString()
+                                                                        : '10/10/2010'}
                                                                 </span>
                                                             </span>
+                                                        </span>
 
-                                                            <span className='image-next'>
-                                                                <img
-                                                                    src={
-                                                                        othersBlog[0]
-                                                                            ? getFullImageUrl(othersBlog[0].image)
-                                                                            : ''
-                                                                    }
-                                                                    alt='image'
-                                                                />
-                                                                <span className='post-nav-title'>
-                                                                    Next
-                                                                </span>
+                                                        <span className='image-next'>
+                                                            <img
+                                                                src={
+                                                                    othersBlog[0]
+                                                                        ? getFullImageUrl(othersBlog[0].image)
+                                                                        : ''
+                                                                }
+                                                                alt='image'
+                                                            />
+                                                            <span className='post-nav-title'>
+                                                                Next
                                                             </span>
-                                                        </a>
+                                                        </span>
                                                     </Link>
                                                 ) : null
                                             ) : null}
