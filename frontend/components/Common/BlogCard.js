@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 
 const BlogCard = (props) => {
     const { id, image, title, category, date } = props.data;
@@ -8,7 +8,7 @@ const BlogCard = (props) => {
         <div className='single-blog-post'>
             <div className='post-image'>
                 <Link href={`/blog/${id}`}>
-                    <img src={`${URL_IMG}/${image}`} alt='image' />
+                    <img src={getFullImageUrl(image)} alt='image' />
                 </Link>
 
                 <div className='date'>

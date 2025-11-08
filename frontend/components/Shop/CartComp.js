@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Link from 'next/link';
 import { connect } from 'react-redux';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import { getCart, editCart, deleteCart, addToCart } from '../../store/action';
 import ModalComp from '../Common/modalComp';
 
@@ -65,7 +65,7 @@ class CartComp extends Component {
                                                                 <td className='product-thumbnail'>
                                                                     <a href='#'>
                                                                         <img
-                                                                            src={`${URL_IMG}/${value.image}`}
+                                                                            src={getFullImageUrl(value.image)}
                                                                             alt='item'
                                                                         />
                                                                     </a>

@@ -15,6 +15,22 @@ export const URL_IMG =
     (apiBaseEnv && apiBaseEnv.endsWith('/api') ? apiBaseEnv.slice(0, -4) : apiBaseEnv) ||
     defaultAssetBase;
 
+// Helper function to get full image URL
+// If the path is already a full URL (starts with http:// or https://), return as is
+// Otherwise, prepend URL_IMG to the path
+export const getFullImageUrl = (imagePath) => {
+    if (!imagePath) return '';
+
+    // If already full URL, return as is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
+    }
+
+    // Otherwise prepend URL_IMG
+    const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    return `${URL_IMG}${cleanPath}`;
+};
+
 // cart
 export const ADD_TO_CART = 'ADD_TO_CART';
 export const GET_CART = 'GET_CART';

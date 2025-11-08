@@ -1,4 +1,4 @@
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import React, { Component } from 'react';
 import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
@@ -21,7 +21,7 @@ class BlogDetails extends Component {
                             <div className='blog-details-desc'>
                                 <div className='article-image'>
                                     <img
-                                        src={blogDetails ? `${URL_IMG}/${blogDetails.image}` : ''}
+                                        src={blogDetails ? getFullImageUrl(blogDetails.image) : ''}
                                         alt='image'
                                     />
                                 </div>
@@ -167,7 +167,7 @@ class BlogDetails extends Component {
                                                                 <img
                                                                     src={
                                                                         othersBlog[1]
-                                                                            ? `${URL_IMG}/${othersBlog[1].image}`
+                                                                            ? getFullImageUrl(othersBlog[1].image)
                                                                             : ''
                                                                     }
                                                                     alt='image'
@@ -233,7 +233,7 @@ class BlogDetails extends Component {
                                                                 <img
                                                                     src={
                                                                         othersBlog[0]
-                                                                            ? `${URL_IMG}/${othersBlog[0].image}`
+                                                                            ? getFullImageUrl(othersBlog[0].image)
                                                                             : ''
                                                                     }
                                                                     alt='image'

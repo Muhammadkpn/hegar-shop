@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { userLogout, getCart, getSearchProduct } from '../../store/action';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import { connect } from 'react-redux';
 import Link from '../Common/ActiveLink';
 import Drawer from './Drawer.js';
@@ -196,7 +196,7 @@ class Navbar extends Component {
                                                 >
                                                     <div className='col-md-2 p-0 m-0'>
                                                         <img
-                                                            src={`${URL_IMG}/${value.image}`}
+                                                            src={getFullImageUrl(value.image)}
                                                             className='img-product'
                                                         />
                                                     </div>
@@ -231,7 +231,7 @@ class Navbar extends Component {
                             ) : (
                                 <>
                                     <img
-                                        src={`${URL_IMG}/image/logo/empty-cart.png`}
+                                        src={getFullImageUrl('image/logo/empty-cart.png')}
                                         className='img-empty-cart'
                                     />
                                     <p className='text-center text-muted'>No products in the cart</p>
@@ -247,7 +247,7 @@ class Navbar extends Component {
                                 {/* <i className='icon-btn far fa-user'></i> */}
                                 <div className='d-flex align-items-center'>
                                     <img
-                                        src={`${URL_IMG}/${image || 'image/users/avatar.jpg'}`}
+                                        src={getFullImageUrl(image || 'image/users/avatar.jpg')}
                                         className='avatar-navbar'
                                     />
                                     <p className='mx-2'>{username}</p>
@@ -384,7 +384,7 @@ class Navbar extends Component {
                                 <div className='img-container'>
                                     <Link href='/' className='navbar-brand'>
                                         <img
-                                            src={`${URL_IMG}/image/logo/logo-wisela.png`}
+                                            src={getFullImageUrl('image/logo/logo-wisela.png')}
                                             alt='logo-wisela'
                                         />
                                     </Link>
@@ -439,7 +439,7 @@ class Navbar extends Component {
                                                     <Link href={`/shop/${item.id}`}>
                                                         <div className='d-flex align-items-center'>
                                                             <img
-                                                                src={`${URL_IMG}/${item.image[0]}`}
+                                                                src={getFullImageUrl(item.image[0])}
                                                                 className='search-img'
                                                             />
                                                             <div className='ml-2'>

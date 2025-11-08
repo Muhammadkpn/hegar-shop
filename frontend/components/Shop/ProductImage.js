@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {URL_IMG} from '../../store/helpers'
+import { getFullImageUrl } from '../../store/helpers'
 import Slider from "react-slick";
 
 function PrevArrow(props) {
@@ -48,7 +48,7 @@ class ProductImage extends Component {
             return (
                 <div key={index}>
                     <div className="item">
-                        <img src={`${URL_IMG}/${item}`} alt="image" />
+                        <img src={getFullImageUrl(item)} alt="image" />
                     </div>
                 </div>
             )
@@ -60,7 +60,7 @@ class ProductImage extends Component {
             return (
                 <div key={index}>
                     <div className="item p-1 no-gutters">
-                        <img src={`${URL_IMG}/${item}`} className={'border rounded'} alt="image" />
+                        <img src={getFullImageUrl(item)} className={'border rounded'} alt="image" />
                     </div>
                 </div>
             )

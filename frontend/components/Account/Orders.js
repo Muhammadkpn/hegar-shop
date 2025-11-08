@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import {
     getHistory,
     confirmDone,
@@ -228,7 +228,7 @@ const Orders = ({ type }) => {
                                             return (
                                                 <tr key={value?.id}>
                                                     <td className='align-middle'>
-                                                        <img src={`${URL_IMG}/${value?.image}`} />
+                                                        <img src={getFullImageUrl(value?.image)} />
                                                     </td>
                                                     <td className='align-middle'>{value?.name}</td>
                                                     <td className='align-middle'>{value?.qty}</td>
@@ -445,7 +445,7 @@ const Orders = ({ type }) => {
                         {(productReview?.image || []).map((value, idx) => {
                             return (
                                 <img
-                                    src={`${URL_IMG}/${value}`}
+                                    src={getFullImageUrl(value)}
                                     className='img-review'
                                     key={idx}
                                 />
@@ -792,7 +792,7 @@ const Orders = ({ type }) => {
                             <div>
                                 <h6 className='mt-3'>Receipt Image</h6>
                                 <img
-                                    src={`${URL_IMG}/${orderDetail.receipt_image}`}
+                                    src={getFullImageUrl(orderDetail.receipt_image)}
                                     style={{ width: '100px', height: '100px' }}
                                 />
                                 <p className='mt-2'>

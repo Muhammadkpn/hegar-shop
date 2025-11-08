@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
 import { addToCart, getProductDetails, updateWishlist } from '../../store/action';
@@ -51,7 +51,7 @@ const ProductCard = ({ data, user_id, wishlist, type, ...props }) => {
                 style={type === 'new-products' ? { backgroundColor: '#fff' } : {}}
             >
                 <img
-                    src={`${URL_IMG}/${image ? image[0] : ''}`}
+                    src={getFullImageUrl(image ? image[0] : '')}
                     className='img rounded img-product'
                     style={type === 'new-products' ? { backgroundColor: '#fff' } : {}}
                 />

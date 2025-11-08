@@ -5,7 +5,7 @@ import {
     uploadPic,
     editKtp,
 } from '../../store/action';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import ModalComp from '../../components/Common/modalComp';
 import DatePicker from 'react-datepicker';
@@ -107,7 +107,7 @@ const AccountDetails = () => {
 
     const renderViewKtp = () => {
         if (ktp.ktp_image) {
-            return <img className='img' src={`${URL_IMG}/${ktp.ktp_image}`} />;
+            return <img className='img' src={getFullImageUrl(ktp.ktp_image)} />;
         } else {
             return <p className='text-center'>You haven't upload ktp. Please upload your ktp!</p>;
         }
@@ -117,7 +117,7 @@ const AccountDetails = () => {
         <div className='account-details-container'>
             <img
                 src={
-                    userById.image ? `${URL_IMG}/${userById.image}` : `${URL_IMG}/image/users/avatar.jpg`
+                    userById.image ? getFullImageUrl(userById.image) : getFullImageUrl('image/users/avatar.jpg')
                 }
                 className='img-account-details img-circle'
             />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { editKtpStatus, getKtp } from '../../store/action';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import ModalComp from '../Common/modalComp';
 
 const SuperAdminKtp = () => {
@@ -47,7 +47,7 @@ const SuperAdminKtp = () => {
             <div>
                 <p className='text-center mb-0'>Are you sure to change the status of this KTP?</p>
                 <div>
-                    <img className='img' src={`${URL_IMG}/${ktp_image}`} />
+                    <img className='img' src={getFullImageUrl(ktp_image)} />
                     <div className='dropdown my-2'>
                         <button
                             className='btn btn-outline-primary dropdown-toggle btn-block'

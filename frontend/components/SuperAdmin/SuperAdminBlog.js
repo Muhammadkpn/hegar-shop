@@ -16,7 +16,7 @@ import {
     editBlogTag,
     editBlogImage,
 } from '../../store/action';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 import ModalComp from '../Common/modalComp';
 import CommentsLists from '../Blog/CommentsLists';
 import BlogDetails from '../Blog/BlogDetails';
@@ -134,7 +134,7 @@ const SuperAdminBlog = () => {
                     <div className='col-sm-12'>
                         <img
                             className='img img-admin-blog d-block mx-auto'
-                            src={imageBlog.type === 'get' ? `${URL_IMG}/${imageBlog.link}` : imageBlog.link}
+                            src={imageBlog.type === 'get' ? getFullImageUrl(imageBlog.link) : imageBlog.link}
                         />
                         <div className='form-group d-flex justify-content-center'>
                             <label htmlFor='upload-blog-image' className='custom-file-upload'>
@@ -486,7 +486,7 @@ const SuperAdminBlog = () => {
                                     <tr key={index}>
                                         <td className='align-middle'>
                                             <img
-                                                src={`${URL_IMG}/${item.image}`}
+                                                src={getFullImageUrl(item.image)}
                                                 alt={`blog-image-${item.title}`}
                                                 className='img img-admin-blog'
                                             />

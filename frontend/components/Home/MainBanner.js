@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSearchProduct } from '../../store/action';
-import { URL_IMG } from '../../store/helpers';
+import { getFullImageUrl } from '../../store/helpers';
 
 const MainBanner = () => {
     const [selected, setSelected] = React.useState('');
@@ -28,7 +28,7 @@ const MainBanner = () => {
             <div
                 className='jumbotron'
                 style={{
-                    background: `url(${URL_IMG}/image/banner/home-banner.jpg)`,
+                    background: `url(${getFullImageUrl('image/banner/home-banner.jpg')})`,
                     backgroundSize: 'cover',
                 }}
             >
@@ -92,7 +92,7 @@ const MainBanner = () => {
                                         <Link href={`/shop/${item.id}`}>
                                             <div className='d-flex align-items-center'>
                                                 <img
-                                                    src={`${URL_IMG}/${item.image[0]}`}
+                                                    src={getFullImageUrl(item.image[0])}
                                                     className='search-img'
                                                 />
                                                 <div className='ml-2'>
