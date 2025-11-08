@@ -6,7 +6,7 @@ class ContactInfo extends Component {
         return (
             <div className="contact-info">
                 <h3>Here to Help</h3>
-                <p>Have a question? You may find an answer in our <Link href="/faqs"><a>FAQs</a></Link>. But you can also contact us.</p>
+                <p>Have a question? You may find an answer in our <Link href="/faqs">FAQs</Link>. But you can also contact us.</p>
 
                 <ul className="contact-list">
                     <li>
@@ -40,38 +40,28 @@ class ContactInfo extends Component {
                 <h3>Follow Us:</h3>
                 <ul className="social">
                     <li>
-                        <Link href="#">
-                            <a target="_blank">
-                                <i className='bx bxl-facebook'></i>
-                            </a>
+                        <Link href="#" target="_blank">
+                            <i className='bx bxl-facebook'></i>
                         </Link>
                     </li>
                     <li>
-                        <Link href="#">
-                            <a target="_blank">
-                                <i className='bx bxl-twitter'></i>
-                            </a>
+                        <Link href="#" target="_blank">
+                            <i className='bx bxl-twitter'></i>
                         </Link>
                     </li>
                     <li>
-                        <Link href="#">
-                            <a href="#" target="_blank">
-                                <i className='bx bxl-instagram'></i>
-                            </a>
+                        <Link href="#" target="_blank">
+                            <i className='bx bxl-instagram'></i>
                         </Link>
                     </li>
                     <li>
-                        <Link href="#">
-                            <a target="_blank">
-                                <i className='bx bxl-linkedin'></i>
-                            </a>
+                        <Link href="#" target="_blank">
+                            <i className='bx bxl-linkedin'></i>
                         </Link>
                     </li>
                     <li>
-                        <Link href="#">
-                            <a target="_blank">
-                                <i className='bx bxl-youtube'></i>
-                            </a>
+                        <Link href="#" target="_blank">
+                            <i className='bx bxl-youtube'></i>
                         </Link>
                     </li>
                 </ul>

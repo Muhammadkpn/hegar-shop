@@ -33,9 +33,11 @@ class Navbar extends Component {
             }
         });
         window.scrollTo(0, 0);
-        $(function () {
-            $('[data-toggle="tooltip"]').tooltip();
-        });
+        if (typeof window !== 'undefined' && typeof window.$ === 'function') {
+            window.$(() => {
+                window.$('[data-toggle="tooltip"]').tooltip();
+            });
+        }
     }
 
     handleLogout = () => {

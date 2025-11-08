@@ -1,18 +1,18 @@
 import { withRouter } from 'next/router';
 import Link from 'next/link';
-import React, { Children } from 'react';
+import React from 'react';
 
-const ActiveLink = ({ router, children, ...props }) => {
-    const child = Children.only(children);
+const ActiveLink = ({ router, children, className = '', activeClassName = '', ...props }) => {
+    const isActive = router?.pathname === props.href;
+    const combinedClassName = [className, isActive ? activeClassName : '']
+        .filter(Boolean)
+        .join(' ');
 
-    let className = child.props.className || '';
-    if (router.pathname === props.href && props.activeClassName) {
-        className = `${className} ${props.activeClassName}`.trim();
-    }
-
-    delete props.activeClassName;
-
-    return <Link {...props}>{React.cloneElement(child, { className })}</Link>;
+    return (
+        <Link legacyBehavior {...props}>
+            <a className={combinedClassName}>{children}</a>
+        </Link>
+    );
 };
 
 export default withRouter(ActiveLink);
