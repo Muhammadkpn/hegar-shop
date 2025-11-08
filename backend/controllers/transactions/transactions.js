@@ -1,14 +1,27 @@
+const { OrderService } = require('../../services/transactions');
 const database = require('../../database');
 const { asyncQuery, today } = require('../../helpers');
 const { getImageUrl } = require('../../helpers/queryHelper');
 
+const orderService = new OrderService();
+
+/**
+ * Transactions Controller - Clean Architecture
+ * Manages order lifecycle: checkout, payment, shipping, completion, and cancellation
+ */
+
 module.exports = {
-    getHistory: async (req, res) => {
-        const { id } = req.params;
-        const {
-            type, orderStatus, startDate, endDate,
-        } = req.query;
-        try {
+  /**
+   * Get order history with complex filters and data aggregation
+   * Note: This method contains complex orchestration logic that could be moved to service layer
+   */
+  getHistory: async (req, res) => {
+    const { id } = req.params;
+    const {
+      type, orderStatus, startDate, endDate,
+    } = req.query;
+
+    try {
             // get orders
             let mainOrders = `SELECT o.user_id, o.order_number, o.checkout_date, o.receipt_image, o.upload_receipt_date, o.send_date, o.done_date, o.order_status_id,
                                 os.status, CONCAT('{"recipient_name":"', so.recipient_name, '","recipient_phone":"', so.recipient_phone, '","origin_subdistrict_id": ', so.origin_subdistrict_id,
@@ -207,308 +220,327 @@ module.exports = {
                 }
             });
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully',
-                data: result,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
+      // Send response
+      res.status(200).send({
+        status: 'success',
+        message: 'Your request has been successfully',
+        data: result,
+      });
+    } catch (error) {
+      console.error('getHistory error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
+  /**
+   * Checkout confirmation - validate stock, reduce inventory, update order status, add shipping
+   */
+  checkoutConfirmation: async (req, res) => {
+    const { order } = req.params;
+    const { shippingOrder } = req.body;
+
+    try {
+      // Get product from cart and product stock
+      const check = `SELECT od.order_number, od.product_id, p.name, p.stock, od.qty FROM products p
+                  JOIN order_details od ON p.id = od.product_id
+                  JOIN orders o ON od.order_number = o.order_number
+                  WHERE od.order_number = ${database.escape(order)} AND o.order_status_id = 1`;
+      const stock = await asyncQuery(check);
+
+      // Check stock before checkout
+      for (const item of stock) {
+        if (item.stock < item.qty) {
+          res.status(400).send({
+            status: 'fail',
+            code: 400,
+            message: `Your input quantity order in ${item.name} less than stock in our database. Please change your quantity order.`,
+          });
+          return;
         }
-    },
-    checkoutConfirmation: async (req, res) => {
-        const { order } = req.params;
-        const { shippingOrder } = req.body;
-        try {
-            // get product from cart and product stock
-            const check = `SELECT od.order_number, od.product_id, p.name, p.stock, od.qty FROM products p
-                        JOIN order_details od ON p.id = od.product_id
-                        JOIN orders o ON od.order_number = o.order_number
-                        WHERE od.order_number = ${database.escape(order)} AND o.order_status_id = 1`;
-            const stock = await asyncQuery(check);
+        // Reduce stock in database
+        const updateStock = `UPDATE products SET stock = ${item.stock - item.qty} WHERE id = ${item.product_id}`;
+        await asyncQuery(updateStock);
+      }
 
-            // check stock before checkout
-            stock.forEach(async (item) => {
-                if (item.stock < item.qty) {
-                    // checkout failed.
-                    res.status(400).send({
-                        status: 'fail',
-                        code: 400,
-                        message: `Your input quantity order in ${item.name} less than stock in our database. Please change your quantity order.`,
-                    });
-                    return null;
-                }
-                // checkout success. reduce stock in database
-                const updateStock = `UPDATE products SET stock = ${item.stock - item.qty} WHERE id = ${item.product_id}`;
-                await asyncQuery(updateStock);
-                return null;
-            });
+      // Update status order to "waiting for payment" (status 2)
+      const query = `UPDATE orders SET order_status_id = 2, checkout_date = '${today}' WHERE order_number = ${database.escape(order)};`;
+      await asyncQuery(query);
 
-            // update status order
-            const query = `UPDATE orders SET order_status_id = 2, checkout_date = '${today}' WHERE order_number = ${database.escape(order)};`;
-            await asyncQuery(query);
-
-            // input total ongkir
-            let insertOngkir = '';
-            shippingOrder.forEach((item) => {
-                if (
-                    !item.order_number
-                    && !item.sub_order_number
-                    && !item.recipient_name
-                    && !item.recipient_phone
-                    && !item.origin_subdistrict_id
-                    && !item.origin_details
-                    && !item.destination_subdistrict_id
-                    && !item.destination_details
-                    && !item.address
-                    && !item.courier_id
-                    && !item.courier_service
-                    && !item.courier_description
-                    && !item.total_weight
-                    && !item.delivery_fee
-                ) {
-                    res.status(422).send({
-                        status: 'fail',
-                        code: 422,
-                        message: 'Your data of shipping order is not completed. Please try again!',
-                    });
-                    return;
-                }
-                insertOngkir += `(${database.escape(item.order_number)}, ${database.escape(item.sub_order_number)}, ${database.escape(item.origin_subdistrict_id)}, ${database.escape(item.origin_details)}, ${database.escape(item.recipient_name)}, ${database.escape(item.recipient_phone)}, ${database.escape(item.destination_subdistrict_id)}, ${database.escape(item.destination_details)}, ${database.escape(item.address)}, ${database.escape(item.courier_id)}, ${database.escape(item.courier_service)}, ${database.escape(item.courier_description)}, ${database.escape(item.total_weight)}, ${database.escape(item.delivery_fee)}),`;
-            });
-            const addOngkir = `INSERT INTO shipping_order (order_number, sub_order_number, origin_subdistrict_id, origin_details, recipient_name, recipient_phone, destination_subdistrict_id, destination_details, address, courier_id, courier_service, courier_description, total_weight, delivery_fee) VALUES ${insertOngkir.slice(0, -1)}`;
-            await asyncQuery(addOngkir);
-
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Checkout has been successfully',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
+      // Validate and insert shipping information
+      let insertOngkir = '';
+      for (const item of shippingOrder) {
+        if (
+          !item.order_number
+          || !item.sub_order_number
+          || !item.recipient_name
+          || !item.recipient_phone
+          || !item.origin_subdistrict_id
+          || !item.origin_details
+          || !item.destination_subdistrict_id
+          || !item.destination_details
+          || !item.address
+          || !item.courier_id
+          || !item.courier_service
+          || !item.courier_description
+          || !item.total_weight
+          || !item.delivery_fee
+        ) {
+          res.status(422).send({
+            status: 'fail',
+            code: 422,
+            message: 'Your data of shipping order is not completed. Please try again!',
+          });
+          return;
         }
-    },
-    paymentUpload: async (req, res) => {
-        const { order } = req.params;
+        insertOngkir += `(${database.escape(item.order_number)}, ${database.escape(item.sub_order_number)}, ${database.escape(item.origin_subdistrict_id)}, ${database.escape(item.origin_details)}, ${database.escape(item.recipient_name)}, ${database.escape(item.recipient_phone)}, ${database.escape(item.destination_subdistrict_id)}, ${database.escape(item.destination_details)}, ${database.escape(item.address)}, ${database.escape(item.courier_id)}, ${database.escape(item.courier_service)}, ${database.escape(item.courier_description)}, ${database.escape(item.total_weight)}, ${database.escape(item.delivery_fee)}),`;
+      }
+      const addOngkir = `INSERT INTO shipping_order (order_number, sub_order_number, origin_subdistrict_id, origin_details, recipient_name, recipient_phone, destination_subdistrict_id, destination_details, address, courier_id, courier_service, courier_description, total_weight, delivery_fee) VALUES ${insertOngkir.slice(0, -1)}`;
+      await asyncQuery(addOngkir);
 
-        if (req.file === undefined) {
-            res.status(400).send('No image');
-            return;
-        }
-        try {
-            // user upload foto bukti pembayaran
-            const query = `UPDATE orders SET receipt_image = 'receipt/${
-                req.file.filename
-            }', upload_receipt_date='${today}' WHERE order_number = ${database.escape(order)};`;
-            const result = await asyncQuery(query);
+      res.status(200).send({
+        status: 'success',
+        message: 'Checkout has been successfully',
+      });
+    } catch (error) {
+      console.error('checkoutConfirmation error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
+  /**
+   * Upload payment receipt image
+   */
+  paymentUpload: async (req, res) => {
+    const { order } = req.params;
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your upload payment has been successfully',
-                data: result,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    paymentConfirmation: async (req, res) => {
-        const { order } = req.params;
-        try {
-            // check order in checkout database
-            const checkout = 'SELECT * FROM orders WHERE order_status_id = 2';
-            const getCheckout = await asyncQuery(checkout);
+    if (req.file === undefined) {
+      res.status(400).send('No image');
+      return;
+    }
 
-            if (getCheckout.length === 0) {
-                res.status(500).send({
-                    status: 'fail',
-                    code: 404,
-                    message: 'You have processed the wrong order. Please try again!',
-                });
-                return;
-            }
+    try {
+      // User uploads payment receipt image
+      const query = `UPDATE orders SET receipt_image = 'receipt/${
+        req.file.filename
+      }', upload_receipt_date='${today}' WHERE order_number = ${database.escape(order)};`;
+      const result = await asyncQuery(query);
 
-            // confirmation from admin
-            const query = `UPDATE orders SET order_status_id = 3 WHERE order_number = ${database.escape(order)};`;
-            await asyncQuery(query);
+      res.status(200).send({
+        status: 'success',
+        message: 'Your upload payment has been successfully',
+        data: result,
+      });
+    } catch (error) {
+      console.error('paymentUpload error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
+  /**
+   * Admin confirms payment
+   */
+  paymentConfirmation: async (req, res) => {
+    const { order } = req.params;
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'You has been successfully to confirm this order',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    // admin send order to user
-    sendConfirmation: async (req, res) => {
-        const { order } = req.params;
-        try {
-            // check order number
-            const checkOrder = `SELECT * FROM orders WHERE order_number = ${database.escape(order)} AND order_status_id = 3;`;
-            const getCheckOrder = await asyncQuery(checkOrder);
+    try {
+      // Check order in checkout database
+      const checkout = 'SELECT * FROM orders WHERE order_status_id = 2';
+      const getCheckout = await asyncQuery(checkout);
 
-            if (getCheckOrder.length === 0) {
-                res.status(400).send({
-                    status: 'fail',
-                    code: 400,
-                    message: 'Your order number invalid',
-                });
-                return;
-            }
+      if (getCheckout.length === 0) {
+        res.status(404).send({
+          status: 'fail',
+          code: 404,
+          message: 'You have processed the wrong order. Please try again!',
+        });
+        return;
+      }
 
-            // update status order from payment success to send
-            const query = `UPDATE orders SET order_status_id = 4, send_date = '${today}' WHERE order_number = ${database.escape(order)};`;
-            await asyncQuery(query);
+      // Confirmation from admin - change status to "payment confirmed" (status 3)
+      const query = `UPDATE orders SET order_status_id = 3 WHERE order_number = ${database.escape(order)};`;
+      await asyncQuery(query);
 
-            res.status(200).send({
-                status: 'success',
-                message:
-                    'You has been successfully to confirm this order that already sent to user',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    // user received package, and order is done
-    doneConfirmation: async (req, res) => {
-        const { order } = req.params;
-        const { userId } = req.body;
-        try {
-            // select orders that you want to confirm
-            const checkOrder = `SELECT * FROM orders WHERE order_number = ${database.escape(order)} AND order_status_id = 4;`;
-            const getCheckOrder = await asyncQuery(checkOrder);
+      res.status(200).send({
+        status: 'success',
+        message: 'You has been successfully to confirm this order',
+      });
+    } catch (error) {
+      console.error('paymentConfirmation error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
+  /**
+   * Admin confirms order has been sent to user
+   */
+  sendConfirmation: async (req, res) => {
+    const { order } = req.params;
 
-            if (getCheckOrder.length === 0) {
-                res.status(400).send({
-                    status: 'fail',
-                    code: 400,
-                    message: 'Your order number invalid',
-                });
-                return;
-            }
+    try {
+      // Check order number
+      const checkOrder = `SELECT * FROM orders WHERE order_number = ${database.escape(order)} AND order_status_id = 3;`;
+      const getCheckOrder = await asyncQuery(checkOrder);
 
-            // get order details
-            const orderDetails = `SELECT * FROM order_details WHERE order_number = ${database.escape(getCheckOrder[0].order_number)}`;
-            const getOrderDetails = await asyncQuery(orderDetails);
+      if (getCheckOrder.length === 0) {
+        res.status(400).send({
+          status: 'fail',
+          code: 400,
+          message: 'Your order number invalid',
+        });
+        return;
+      }
 
-            // add blank review sebanyak jumlah produk dlm order number
-            // get current value of product_review sequence
-            const autoIncrement = 'SELECT MAX(id) AS id FROM product_review;';
-            const getAutoIncrement = await asyncQuery(autoIncrement);
-            getOrderDetails.forEach(async (item, index) => {
-                // initialize data in table product review
-                const addReview = `INSERT INTO product_review (review_id, user_id, status) VALUES (${
-                    parseInt(getAutoIncrement[0].id, 10) + index + 1
-                }, ${userId}, 2);`;
-                await asyncQuery(addReview);
+      // Update status order from "payment success" to "sent" (status 4)
+      const query = `UPDATE orders SET order_status_id = 4, send_date = '${today}' WHERE order_number = ${database.escape(order)};`;
+      await asyncQuery(query);
 
-                // update review id in order details
-                const editOrderDetails = `UPDATE order_details SET review_id = ${
-                    parseInt(getAutoIncrement[0].id, 10) + index + 1
-                } WHERE order_number = ${database.escape(item.order_number)} and product_id = ${
-                    item.product_id
-                }`;
-                await asyncQuery(editOrderDetails);
-            });
-            // update status order from send order to done order
-            const query = `UPDATE orders SET order_status_id = 5, done_date = '${today}' WHERE order_number = ${database.escape(order)};`;
-            await asyncQuery(query);
+      res.status(200).send({
+        status: 'success',
+        message: 'You has been successfully to confirm this order that already sent to user',
+      });
+    } catch (error) {
+      console.error('sendConfirmation error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
+  /**
+   * User confirms order received and is complete
+   * Creates blank reviews for each product in the order
+   */
+  doneConfirmation: async (req, res) => {
+    const { order } = req.params;
+    const { userId } = req.body;
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your order is done. Thank you for your order',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    // user cancel order
-    transactionFailed: async (req, res) => {
-        const { order } = req.params;
-        const { type } = req.query;
-        try {
-            // check status order
-            const status = `SELECT * FROM orders WHERE order_number = ${database.escape(order)}`;
-            const checkStatus = await asyncQuery(status);
+    try {
+      // Select orders that you want to confirm
+      const checkOrder = `SELECT * FROM orders WHERE order_number = ${database.escape(order)} AND order_status_id = 4;`;
+      const getCheckOrder = await asyncQuery(checkOrder);
 
-            const { orderStatusId } = checkStatus[0];
-            if ((orderStatusId >= 4 && orderStatusId <= 7) || orderStatusId === 1) {
-                res.status(403).send({
-                    status: 'fail',
-                    code: 403,
-                    message: "Your order can't be canceled",
-                });
-                return;
-            }
+      if (getCheckOrder.length === 0) {
+        res.status(400).send({
+          status: 'fail',
+          code: 400,
+          message: 'Your order number invalid',
+        });
+        return;
+      }
 
-            // get data order number want to be canceled
-            const data = `SELECT * FROM order_details WHERE order_number = ${database.escape(order)};`;
-            const getData = await asyncQuery(data);
+      // Get order details
+      const orderDetails = `SELECT * FROM order_details WHERE order_number = ${database.escape(getCheckOrder[0].order_number)}`;
+      const getOrderDetails = await asyncQuery(orderDetails);
 
-            getData.map(async (item) => {
-                // get stock in database
-                const getStock = `SELECT * FROM products WHERE id = ${item.product_id};`;
-                const stock = await asyncQuery(getStock);
+      // Add blank review for each product in order
+      // Get current value of product_review sequence
+      const autoIncrement = 'SELECT MAX(id) AS id FROM product_review;';
+      const getAutoIncrement = await asyncQuery(autoIncrement);
 
-                // update stock in database with addition of canceled orders
-                const updateStock = `UPDATE products SET stock = ${
-                    stock[0].stock + item.qty
-                } WHERE id = ${item.product_id};`;
-                await asyncQuery(updateStock);
-            });
+      for (let index = 0; index < getOrderDetails.length; index++) {
+        const item = getOrderDetails[index];
+        // Initialize data in table product review
+        const addReview = `INSERT INTO product_review (review_id, user_id, status) VALUES (${
+          parseInt(getAutoIncrement[0].id, 10) + index + 1
+        }, ${userId}, 2);`;
+        await asyncQuery(addReview);
 
-            // update order status
-            const query = `UPDATE orders SET order_status_id = ${
-                type === 'cancel' ? 6 : 7
-            } WHERE order_number = ${database.escape(order)};`;
-            await asyncQuery(query);
+        // Update review id in order details
+        const editOrderDetails = `UPDATE order_details SET review_id = ${
+          parseInt(getAutoIncrement[0].id, 10) + index + 1
+        } WHERE order_number = ${database.escape(item.order_number)} and product_id = ${
+          item.product_id
+        }`;
+        await asyncQuery(editOrderDetails);
+      }
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your order has been failed',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
+      // Update status order from "sent" to "done" (status 5)
+      const query = `UPDATE orders SET order_status_id = 5, done_date = '${today}' WHERE order_number = ${database.escape(order)};`;
+      await asyncQuery(query);
+
+      res.status(200).send({
+        status: 'success',
+        message: 'Your order is done. Thank you for your order',
+      });
+    } catch (error) {
+      console.error('doneConfirmation error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
+  /**
+   * User cancels order or admin rejects order
+   * Restores stock for all products in the order
+   */
+  transactionFailed: async (req, res) => {
+    const { order } = req.params;
+    const { type } = req.query;
+
+    try {
+      // Check status order
+      const status = `SELECT * FROM orders WHERE order_number = ${database.escape(order)}`;
+      const checkStatus = await asyncQuery(status);
+
+      const { orderStatusId } = checkStatus[0];
+      if ((orderStatusId >= 4 && orderStatusId <= 7) || orderStatusId === 1) {
+        res.status(403).send({
+          status: 'fail',
+          code: 403,
+          message: "Your order can't be canceled",
+        });
+        return;
+      }
+
+      // Get data order number want to be canceled
+      const data = `SELECT * FROM order_details WHERE order_number = ${database.escape(order)};`;
+      const getData = await asyncQuery(data);
+
+      // Restore stock for all products
+      for (const item of getData) {
+        // Get stock in database
+        const getStock = `SELECT * FROM products WHERE id = ${item.product_id};`;
+        const stock = await asyncQuery(getStock);
+
+        // Update stock in database with addition of canceled orders
+        const updateStock = `UPDATE products SET stock = ${
+          stock[0].stock + item.qty
+        } WHERE id = ${item.product_id};`;
+        await asyncQuery(updateStock);
+      }
+
+      // Update order status: 6 = canceled by user, 7 = rejected by admin
+      const query = `UPDATE orders SET order_status_id = ${
+        type === 'cancel' ? 6 : 7
+      } WHERE order_number = ${database.escape(order)};`;
+      await asyncQuery(query);
+
+      res.status(200).send({
+        status: 'success',
+        message: 'Your order has been failed',
+      });
+    } catch (error) {
+      console.error('transactionFailed error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
 };
