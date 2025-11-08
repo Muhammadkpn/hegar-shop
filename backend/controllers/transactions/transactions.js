@@ -1,5 +1,6 @@
 const database = require('../../database');
 const { asyncQuery, today } = require('../../helpers');
+const { getImageUrl } = require('../../helpers/queryHelper');
 
 module.exports = {
     getHistory: async (req, res) => {
@@ -83,6 +84,10 @@ module.exports = {
                 if (item.recipient_address) {
                     getMainOrders[index].recipient_address = JSON.parse(item.recipient_address);
                 }
+                // Convert receipt_image to full URL
+                if (item.receipt_image) {
+                    getMainOrders[index].receipt_image = getImageUrl(item.receipt_image, req);
+                }
             });
 
             // get total_price and products in every single item products in sub_order_number
@@ -104,7 +109,12 @@ module.exports = {
                     acc[key] = [];
                 }
                 // Add object to list for given key's value
-                acc[key].push(JSON.parse(obj.products));
+                const product = JSON.parse(obj.products);
+                // Convert image path to full URL
+                if (product.image) {
+                    product.image = getImageUrl(product.image, req);
+                }
+                acc[key].push(product);
                 return acc;
             }, {});
 

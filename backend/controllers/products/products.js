@@ -6,6 +6,7 @@ const {
     paginatedQuery,
     today,
     escape,
+    getImageUrls,
 } = require('../../helpers/queryHelper');
 const { getPaginationParams, createPaginatedResponse } = require('../../helpers/pagination');
 
@@ -29,7 +30,7 @@ module.exports = {
 
         try {
             // Build sort clause safely
-            const allowedSortFields = ['name', 'regular_price', 'sale_price', 'released_date', 'rating'];
+            const allowedSortFields = ['name', 'regular_price', 'sale_price', 'released_date', 'rating', 'discount'];
             let sortField = allowedSortFields.includes(_sort) ? _sort : 'released_date';
             let sortOrder = _order && _order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
@@ -126,7 +127,8 @@ module.exports = {
                     result.data[index].tags = item.tags.split(',');
                 }
                 if (item.image) {
-                    result.data[index].image = item.image.split(',');
+                    const imagePaths = item.image.split(',');
+                    result.data[index].image = getImageUrls(imagePaths, req);
                 }
             });
 
@@ -211,7 +213,8 @@ module.exports = {
                 product.rating = 0;
             }
 
-            product.image = product.image ? product.image.split(',') : [];
+            const imagePaths = product.image ? product.image.split(',') : [];
+            product.image = getImageUrls(imagePaths, req);
             product.category = product.category ? product.category.split(',') : [];
             product.tags = product.tags ? product.tags.split(',') : [];
 
@@ -288,7 +291,8 @@ module.exports = {
 
             // Process results
             result.forEach((item, index) => {
-                result[index].image = item.image ? item.image.split(',') : [];
+                const imagePaths = item.image ? item.image.split(',') : [];
+                result[index].image = getImageUrls(imagePaths, req);
                 result[index].category = item.category ? item.category.split(',') : [];
                 result[index].tags = item.tags ? item.tags.split(',') : [];
             });
@@ -367,7 +371,8 @@ module.exports = {
 
             // Process results
             result.data.forEach((item, index) => {
-                result.data[index].image = item.image ? item.image.split(',') : [];
+                const imagePaths = item.image ? item.image.split(',') : [];
+                result.data[index].image = getImageUrls(imagePaths, req);
             });
 
             res.status(200).send(createPaginatedResponse(
