@@ -1,183 +1,158 @@
-const database = require('../../database');
-const { asyncQuery, generateQuery, today } = require('../../helpers');
 const { getImageUrls } = require('../../helpers/queryHelper');
+const { ProductReviewService } = require('../../services/products');
+
+const productReviewService = new ProductReviewService();
+
+/**
+ * Product Review Controller - Clean Architecture
+ * Manages product review operations
+ */
 
 module.exports = {
-    getProductReview: async (req, res) => {
-        const { id } = req.params;
-        const { type } = req.query;
-        try {
-            // get all product review
-            let query = `SELECT pr.id, pr.review_id, uk.user_id, uk.full_name, od.order_number, od.product_id, pr.date,
-                    GROUP_CONCAT(ri.image) AS image, pr.comment, pr.rating, pr.status FROM product_review pr
-                    LEFT JOIN review_image ri ON pr.review_id = ri.review_id
-                    JOIN order_details od ON pr.id = od.review_id
-                    LEFT JOIN user_ktp uk ON pr.user_id = uk.user_id
-                    WHERE pr.rating IS NOT NULL`;
+  /**
+   * Get product reviews by type
+   */
+  getProductReview: async (req, res) => {
+    const { id } = req.params;
+    const { type } = req.query;
 
-            // type of query
-            if (type === 'user-id') {
-                query += ` AND pr.user_id = ${database.escape(id)} GROUP BY pr.id;`;
-            } else if (type === 'order-number') {
-                query += ` AND od.order_number = ${database.escape(id)} GROUP BY pr.id;`;
-            } else if (type === 'review-id') {
-                query += ` AND pr.review_id = ${database.escape(id)} GROUP BY pr.id;`;
-            } else if (type === 'product-id') {
-                query += ` AND od.product_id = ${database.escape(id)} GROUP BY pr.id;`;
-            } else if (type === 'testimony') {
-                query += ` GROUP BY pr.id ORDER BY rand() LIMIT ${database.escape(id)}`;
-            }
-            const result = await asyncQuery(query);
+    try {
+      const result = await productReviewService.getProductReviews(id, type);
 
-            // convert data to array and convert to full URLs
-            result.forEach((item, index) => {
-                if (item.image) {
-                    const imagePaths = item.image.split(',');
-                    result[index].image = getImageUrls(imagePaths, req);
-                }
-            });
+      // Convert image paths to full URLs
+      const processImages = (reviews) => {
+        reviews.forEach((review, index) => {
+          if (review.image) {
+            const imagePaths = review.image.split(',');
+            reviews[index].image = getImageUrls(imagePaths, req);
+          }
+        });
+        return reviews;
+      };
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your request has been successfully!',
-                data: type === 'review-id' ? result[0] : result,
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
+      // Handle single vs array result
+      let data;
+      if (type === 'review-id') {
+        // Single result
+        if (result.image) {
+          const imagePaths = result.image.split(',');
+          result.image = getImageUrls(imagePaths, req);
         }
-    },
-    reviewUpload: async (req, res) => {
-        const { id } = req.params;
+        data = result;
+      } else {
+        // Array result
+        data = Array.isArray(result) ? processImages(result) : result;
+      }
 
-        try {
-            // user upload foto bukti pembayaran
-            req.files.forEach(async (item) => {
-                const query = `INSERT INTO review_image (review_id, image) VALUES (${id}, 'image/users/review/${item.filename}');`;
-                await asyncQuery(query);
-            });
+      res.status(200).send({
+        status: 'success',
+        message: 'Your request has been successfully!',
+        data,
+      });
+    } catch (error) {
+      console.error('getProductReview error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your image has been uploaded to database',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    addReview: async (req, res) => {
-        const { comment, rating } = req.body;
-        const { id } = req.params;
-        try {
-            // check review
-            const checkReview = `SELECT * FROM product_review WHERE id = ${database.escape(id)}`;
-            const resultCheck = asyncQuery(checkReview);
+  /**
+   * Upload review images
+   */
+  reviewUpload: async (req, res) => {
+    const { id } = req.params;
 
-            if (resultCheck.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: 'Review not found',
-                });
-                return;
-            }
+    try {
+      await productReviewService.uploadReviewImages(id, req.files);
 
-            // insert new review
-            const addReview = `UPDATE product_review SET date='${today}', comment='${comment}', rating=${rating}, status=1 WHERE id=${id}`;
-            await asyncQuery(addReview);
+      res.status(200).send({
+        status: 'success',
+        message: 'Your image has been uploaded to database',
+      });
+    } catch (error) {
+      console.error('reviewUpload error:', error);
+      res.status(500).send({
+        status: 'fail',
+        code: 500,
+        message: error.message,
+      });
+    }
+  },
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your product review has been uploaded to database',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    editReview: async (req, res) => {
-        const { id } = req.params;
-        try {
-            // check review
-            const checkReview = `SELECT * FROM product_review WHERE id = ${database.escape(id)}`;
-            const resultCheck = asyncQuery(checkReview);
+  /**
+   * Add or update review
+   */
+  addReview: async (req, res) => {
+    const { comment, rating } = req.body;
+    const { id } = req.params;
 
-            if (resultCheck.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: 'Review not found',
-                });
-                return;
-            }
+    try {
+      await productReviewService.addReview(id, { comment, rating });
 
-            // edit Review product
-            const editReview = `UPDATE product_review SET ${generateQuery(req.body)} WHERE id = ${database.escape(id)}`;
-            await asyncQuery(editReview);
+      res.status(200).send({
+        status: 'success',
+        message: 'Review has been added to product',
+      });
+    } catch (error) {
+      console.error('addReview error:', error);
+      const statusCode = error.message === 'Review not found' ? 404 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message,
+      });
+    }
+  },
 
-            // send response
-            res.status(200).send({
-                status: 'fail',
-                message: 'Your product review has been edited',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
-    deleteReview: async (req, res) => {
-        const { id } = req.params;
+  /**
+   * Edit review
+   */
+  editReview: async (req, res) => {
+    const { comment, rating } = req.body;
+    const { id } = req.params;
 
-        try {
-            // check review
-            const checkReview = `SELECT * FROM product_review WHERE id = ${database.escape(id)}`;
-            const resultCheck = asyncQuery(checkReview);
+    try {
+      await productReviewService.addReview(id, { comment, rating });
 
-            if (resultCheck.length === 0) {
-                res.status(404).send({
-                    status: 'fail',
-                    code: 404,
-                    message: 'Review not found',
-                });
-                return;
-            }
+      res.status(200).send({
+        status: 'success',
+        message: `Review with id: ${id} has been edited`,
+      });
+    } catch (error) {
+      console.error('editReview error:', error);
+      const statusCode = error.message === 'Review not found' ? 404 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message,
+      });
+    }
+  },
 
-            // delete review
-            const deleteReview = `DELETE FROM product_review WHERE id = ${database.escape(id)}`;
-            await asyncQuery(deleteReview);
+  /**
+   * Delete review
+   */
+  deleteReview: async (req, res) => {
+    const { id } = req.params;
 
-            // send response
-            res.status(200).send({
-                status: 'success',
-                message: 'Your review has been deleted',
-            });
-        } catch (error) {
-            console.log(error);
-            res.status(500).send({
-                status: 'fail',
-                code: 500,
-                message: error.message,
-            });
-        }
-    },
+    try {
+      await productReviewService.deleteReview(id);
+
+      res.status(200).send({
+        status: 'success',
+        message: `Review with id: ${id} has been deleted`,
+      });
+    } catch (error) {
+      console.error('deleteReview error:', error);
+      const statusCode = error.message === 'Review not found' ? 404 : 500;
+      res.status(statusCode).send({
+        status: 'fail',
+        code: statusCode,
+        message: error.message,
+      });
+    }
+  },
 };
