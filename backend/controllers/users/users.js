@@ -5,6 +5,7 @@ const {
     generateUpdateQuery,
     paginatedQuery,
     today,
+    getImageUrl,
 } = require('../../helpers/queryHelper');
 const { getPaginationParams, createPaginatedResponse } = require('../../helpers/pagination');
 const { createToken } = require('../../helpers/jwt');
@@ -102,6 +103,13 @@ module.exports = {
             // Execute paginated query
             const result = await paginatedQuery(baseQuery, countQuery, params, page, limit);
 
+            // Convert user images to full URLs
+            result.data.forEach((item, index) => {
+                if (item.image) {
+                    result.data[index].image = getImageUrl(item.image, req);
+                }
+            });
+
             res.status(200).send(createPaginatedResponse(
                 result.data,
                 result.total,
@@ -140,6 +148,11 @@ module.exports = {
 
             // Remove password from response
             delete result[0].password;
+
+            // Convert user image to full URL
+            if (result[0].image) {
+                result[0].image = getImageUrl(result[0].image, req);
+            }
 
             res.status(200).send({
                 status: 'success',
