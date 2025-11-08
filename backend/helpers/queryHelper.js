@@ -236,6 +236,52 @@ async function executeTransaction(callback) {
     });
 }
 
+/**
+ * Convert image path to full URL
+ * @param {string} imagePath - Relative image path
+ * @param {Object} req - Express request object (optional)
+ * @returns {string} Full image URL
+ */
+function getImageUrl(imagePath, req = null) {
+    if (!imagePath) return '';
+
+    // If it's already a full URL, return as is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
+    }
+
+    // Get base URL from environment or request
+    let baseUrl = process.env.SERVER_URL || process.env.API_URL;
+
+    // If no env var, try to construct from request
+    if (!baseUrl && req) {
+        const protocol = req.protocol || 'http';
+        const host = req.get('host') || 'localhost:2000';
+        baseUrl = `${protocol}://${host}`;
+    }
+
+    // Default to localhost:2000 if nothing else works
+    if (!baseUrl) {
+        baseUrl = 'http://localhost:2000';
+    }
+
+    // Remove leading slash from imagePath if present
+    const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+
+    return `${baseUrl}${cleanPath}`;
+}
+
+/**
+ * Convert array of image paths to full URLs
+ * @param {Array} imagePaths - Array of relative image paths
+ * @param {Object} req - Express request object (optional)
+ * @returns {Array} Array of full image URLs
+ */
+function getImageUrls(imagePaths, req = null) {
+    if (!Array.isArray(imagePaths)) return [];
+    return imagePaths.map(path => getImageUrl(path, req));
+}
+
 module.exports = {
     // Legacy (backward compatibility)
     asyncQuery,
@@ -249,6 +295,10 @@ module.exports = {
     paginatedQuery,
     escapeIdentifier,
     executeTransaction,
+
+    // Image URL helpers
+    getImageUrl,
+    getImageUrls,
 
     // Utility
     escape: database.escape,
