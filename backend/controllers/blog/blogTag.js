@@ -29,7 +29,7 @@ module.exports = {
         try {
             // count tag in table
             const countTag = `SELECT bt.tag_id, tb.name AS tags, COUNT(bt.tag_id) AS count FROM blog_tag bt
-            JOIN tag_blog tb ON bt.tag_id = tb.id GROUP BY name ORDER BY count DESC`;
+            JOIN tag_blog tb ON bt.tag_id = tb.id GROUP BY bt.tag_id, tb.name ORDER BY count DESC`;
             const result = await asyncQuery(countTag);
 
             // response
