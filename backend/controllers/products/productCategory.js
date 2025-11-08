@@ -31,7 +31,7 @@ module.exports = {
         try {
             // count category
             const countCategory = `SELECT pc.category_id, cp.name AS category, COUNT(pc.category_id) AS count FROM product_category pc
-                            JOIN category_product cp ON pc.category_id = cp.id GROUP BY pc.category_id ORDER BY count DESC;`;
+                            JOIN category_product cp ON pc.category_id = cp.id GROUP BY pc.category_id, cp.name ORDER BY count DESC;`;
             const result = await asyncQuery(countCategory);
 
             // send response
@@ -57,7 +57,7 @@ module.exports = {
             JOIN category_product cp ON pc.category_id = cp.id
             JOIN products p ON pc.product_id = p.id
             WHERE p.store_id = ${database.escape(id)}
-            GROUP BY pc.category_id ORDER BY count DESC;`;
+            GROUP BY pc.category_id, cp.name ORDER BY count DESC;`;
             const result = await asyncQuery(countCategory);
             const finalResult = { store_id: id, countCategory: result };
 
