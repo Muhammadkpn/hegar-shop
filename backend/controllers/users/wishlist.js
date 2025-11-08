@@ -1,4 +1,4 @@
-const { asyncQuery } = require('../../helpers/queryHelper');
+const { asyncQuery, getImageUrl } = require('../../helpers/queryHelper');
 
 /**
  * User Wishlist Controller - Optimized
@@ -46,6 +46,11 @@ module.exports = {
             const finalResult = [];
             result.forEach((item) => {
                 const product = JSON.parse(item.products);
+
+                // Convert image path to full URL
+                if (product.image) {
+                    product.image = getImageUrl(product.image, req);
+                }
 
                 // Check if user already exists in finalResult
                 const existingUser = finalResult.find((u) => u.user_id === item.user_id);

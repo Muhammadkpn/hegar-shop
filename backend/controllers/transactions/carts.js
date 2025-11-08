@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 const orderid = require('order-id')('mysecret');
 const database = require('../../database');
-const { asyncQuery } = require('../../helpers/queryHelper');
+const { asyncQuery, getImageUrl } = require('../../helpers/queryHelper');
 
 module.exports = {
     getCart: async (req, res) => {
@@ -52,7 +52,12 @@ module.exports = {
                 let qtyStore = 0; // store total of qty in a specific store
                 let weightStore = 0; // store total of weight in a specific store
                 groupCart[item].forEach((value) => {
-                    tempProducts.push(JSON.parse(value.products));
+                    const product = JSON.parse(value.products);
+                    // Convert image path to full URL
+                    if (product.image) {
+                        product.image = getImageUrl(product.image, req);
+                    }
+                    tempProducts.push(product);
                     priceStore += value.total_price;
                     qtyStore += value.qty;
                     weightStore += value.total_weight;

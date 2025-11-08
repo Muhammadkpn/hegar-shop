@@ -1,5 +1,6 @@
 const database = require('../../database');
 const { asyncQuery, generateQuery, today } = require('../../helpers');
+const { getImageUrls } = require('../../helpers/queryHelper');
 
 module.exports = {
     getProductReview: async (req, res) => {
@@ -28,12 +29,11 @@ module.exports = {
             }
             const result = await asyncQuery(query);
 
-            // convert data to array
-            let image = [];
+            // convert data to array and convert to full URLs
             result.forEach((item, index) => {
                 if (item.image) {
-                    image = item.image.split(',');
-                    result[index].image = image;
+                    const imagePaths = item.image.split(',');
+                    result[index].image = getImageUrls(imagePaths, req);
                 }
             });
 
